@@ -1,0 +1,2625 @@
+
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="theme-color" content="#050710" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <title>A Journey to Prove My Love — For Maya</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;1,400&family=Press+Start+2P&family=Quicksand:wght@500;600;700&display=swap" rel="stylesheet" />
+
+  <style>
+    :root {
+      --bg-deep: #050710;
+      --border-gold: #e6c687;
+      --text-main: #f4efe6;
+      --text-muted: #b7bdd6;
+      --accent-warm: #f2a66b;
+      --font-pixel: 'Press Start 2P', monospace;
+      --font-ui: 'Quicksand', system-ui, -apple-system, sans-serif;
+      --font-letter: 'Lora', Georgia, serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+    }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      height: 100dvh;
+      background: var(--bg-deep);
+      color: var(--text-main);
+      font-family: var(--font-ui);
+      overflow: hidden;
+      touch-action: none;
+    }
+
+    #app {
+      position: fixed;
+      inset: 0;
+      width: 100vw;
+      height: 100vh;
+      height: 100dvh;
+      overflow: hidden;
+      background: var(--bg-deep);
+    }
+
+    .hidden { display: none !important; }
+
+    /* Fullscreen Canvas Stage */
+    #stage-area {
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+    }
+
+    #game-container {
+      width: 100%;
+      height: 100%;
+    }
+
+    #game-container canvas {
+      display: block;
+      width: 100% !important;
+      height: 100% !important;
+      image-rendering: pixelated;
+      image-rendering: crisp-edges;
+    }
+
+    /* HUD Bar */
+    .hud-bar {
+      position: fixed;
+      top: max(12px, env(safe-area-inset-top));
+      left: max(14px, env(safe-area-inset-left));
+      right: max(14px, env(safe-area-inset-right));
+      z-index: 30;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      pointer-events: none;
+    }
+
+    .hud-left, .hud-right {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      pointer-events: auto;
+    }
+
+    .pixel-badge {
+      font-family: var(--font-pixel);
+      font-size: 9px;
+      letter-spacing: 0.06em;
+      padding: 6px 10px;
+      background: rgba(9, 12, 24, 0.72);
+      border: 1px solid rgba(230, 198, 135, 0.5);
+      color: var(--border-gold);
+      border-radius: 4px;
+      backdrop-filter: blur(6px);
+    }
+
+    .location-text {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-shadow: 0 1px 6px rgba(0, 0, 0, 0.95);
+    }
+
+    .audio-control-wrap {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(9, 12, 24, 0.72);
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      padding: 4px 8px;
+      border-radius: 20px;
+      backdrop-filter: blur(6px);
+    }
+
+    #volume-slider {
+      width: 64px;
+      accent-color: var(--border-gold);
+      cursor: pointer;
+    }
+
+    .icon-btn {
+      background: rgba(9, 12, 24, 0.72);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      color: var(--text-main);
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      cursor: pointer;
+      display: grid;
+      place-items: center;
+      font-size: 14px;
+      backdrop-filter: blur(6px);
+      transition: transform 0.15s ease, border-color 0.2s ease;
+    }
+
+    .audio-control-wrap .icon-btn {
+      border: none;
+      background: transparent;
+      backdrop-filter: none;
+      width: 26px;
+      height: 26px;
+    }
+
+    .icon-btn:hover {
+      border-color: var(--border-gold);
+      transform: scale(1.06);
+    }
+
+    /* Rotate Hint (non-intrusive) */
+    .rotate-hint {
+      position: fixed;
+      top: calc(max(12px, env(safe-area-inset-top)) + 42px);
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 35;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: rgba(15, 20, 38, 0.86);
+      border: 1px solid rgba(230, 198, 135, 0.4);
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 11px;
+      color: var(--text-muted);
+      max-width: 92vw;
+      backdrop-filter: blur(6px);
+    }
+
+    .rotate-hint button {
+      background: none;
+      border: none;
+      color: var(--border-gold);
+      font-size: 14px;
+      cursor: pointer;
+      padding: 0 2px;
+    }
+
+    /* Opening Title Overlay */
+    .overlay-layer {
+      position: fixed;
+      inset: 0;
+      z-index: 25;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      pointer-events: none;
+    }
+
+    .title-card {
+      pointer-events: auto;
+      text-align: center;
+      max-width: 680px;
+      padding: 24px 28px;
+      background: radial-gradient(circle, rgba(9, 12, 26, 0.72) 0%, rgba(9, 12, 26, 0.25) 100%);
+      border-radius: 16px;
+      backdrop-filter: blur(3px);
+      animation: fadeSlideUp 1.2s ease forwards;
+    }
+
+    .eyebrow {
+      font-family: var(--font-pixel);
+      font-size: 9px;
+      letter-spacing: 0.2em;
+      color: var(--accent-warm);
+      margin: 0 0 14px;
+    }
+
+    .main-title {
+      font-family: var(--font-pixel);
+      font-size: clamp(15px, 3.2vw, 28px);
+      line-height: 1.5;
+      margin: 0 0 14px;
+      color: #fff8eb;
+      text-shadow: 0 4px 18px rgba(0, 0, 0, 0.95), 0 0 24px rgba(242, 166, 107, 0.35);
+    }
+
+    .subtitle {
+      font-family: var(--font-letter);
+      font-style: italic;
+      font-size: clamp(14px, 2vw, 18px);
+      color: #e2d9c8;
+      margin: 0 0 26px;
+    }
+
+    .opening-actions {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 12px;
+    }
+
+    .save-hint { margin-top: 14px; font-size: 12px; color: var(--text-muted); }
+
+    /* Pixel Buttons */
+    .pixel-btn {
+      font-family: var(--font-pixel);
+      font-size: 11px;
+      letter-spacing: 0.06em;
+      padding: 13px 22px;
+      border-radius: 6px;
+      cursor: pointer;
+      border: 2px solid var(--border-gold);
+      transition: transform 0.15s ease, box-shadow 0.2s ease;
+    }
+
+    .pixel-btn.primary {
+      background: linear-gradient(180deg, #f0cf8b 0%, #d59f53 100%);
+      color: #1d140a;
+      box-shadow: 0 4px 16px rgba(230, 198, 135, 0.3);
+    }
+
+    .pixel-btn.primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 22px rgba(230, 198, 135, 0.5);
+    }
+
+    .pixel-btn.ghost {
+      background: rgba(12, 16, 30, 0.78);
+      color: var(--border-gold);
+    }
+
+    .pixel-btn.ghost:hover { background: rgba(230, 198, 135, 0.14); }
+    .pixel-btn.small { font-size: 9px; padding: 8px 14px; }
+
+    /* Chapter Toast */
+    .chapter-toast {
+      position: fixed;
+      top: 18%;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 26;
+      text-align: center;
+      padding: 14px 28px;
+      width: max-content;
+      max-width: 90vw;
+      background: linear-gradient(90deg, transparent, rgba(8, 11, 22, 0.82) 20%, rgba(8, 11, 22, 0.82) 80%, transparent);
+      pointer-events: none;
+      animation: chapterFade 3.8s ease forwards;
+    }
+
+    .chapter-toast-line {
+      width: 180px;
+      height: 1px;
+      margin: 6px auto;
+      background: linear-gradient(90deg, transparent, var(--border-gold), transparent);
+    }
+
+    .chapter-toast-num {
+      font-family: var(--font-pixel);
+      font-size: 10px;
+      color: var(--accent-warm);
+      letter-spacing: 0.16em;
+      margin-bottom: 6px;
+    }
+
+    .chapter-toast-title {
+      font-family: var(--font-letter);
+      font-size: clamp(18px, 2.8vw, 26px);
+      color: #fff6e5;
+      letter-spacing: 0.08em;
+    }
+
+    /* Dialogue Box */
+    .dialogue-box {
+      position: fixed;
+      bottom: max(22px, env(safe-area-inset-bottom));
+      left: 50%;
+      transform: translateX(-50%);
+      width: min(680px, 92vw);
+      z-index: 28;
+      background: rgba(9, 13, 27, 0.9);
+      border: 2px solid rgba(230, 198, 135, 0.75);
+      border-radius: 10px;
+      padding: 14px 18px;
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.72);
+      backdrop-filter: blur(6px);
+      cursor: pointer;
+    }
+
+    .dialogue-speaker {
+      font-family: var(--font-pixel);
+      font-size: 9px;
+      color: var(--border-gold);
+      margin-bottom: 8px;
+      text-transform: uppercase;
+    }
+
+    .dialogue-text {
+      font-family: var(--font-letter);
+      font-size: clamp(14px, 2vw, 17px);
+      line-height: 1.55;
+      margin: 0 0 12px;
+      color: #f8f3eb;
+      min-height: 2.5em;
+    }
+
+    .dialogue-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .dialogue-hint { font-size: 11px; color: var(--text-muted); }
+
+    /* Interact Prompt */
+    .interact-prompt {
+      position: fixed;
+      bottom: max(24px, env(safe-area-inset-bottom));
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 24;
+      background: rgba(10, 14, 28, 0.88);
+      border: 1px solid var(--border-gold);
+      color: var(--border-gold);
+      font-family: var(--font-pixel);
+      font-size: 9px;
+      padding: 8px 14px;
+      border-radius: 20px;
+      animation: pulseFloat 1.8s ease-in-out infinite;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    /* Touch Controls Overlay (Floating Bottom) */
+    .touch-deck {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      z-index: 27;
+      padding: 12px max(18px, env(safe-area-inset-right)) max(16px, env(safe-area-inset-bottom)) max(18px, env(safe-area-inset-left));
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      background: linear-gradient(180deg, rgba(5, 7, 16, 0) 0%, rgba(5, 7, 16, 0.52) 100%);
+      pointer-events: none;
+    }
+
+    .joystick-zone {
+      width: 104px;
+      height: 104px;
+      display: grid;
+      place-items: center;
+      touch-action: none;
+      pointer-events: auto;
+    }
+
+    .joystick-base {
+      width: 86px;
+      height: 86px;
+      border-radius: 50%;
+      background: rgba(12, 16, 30, 0.55);
+      border: 2px solid rgba(230, 198, 135, 0.5);
+      position: relative;
+      display: grid;
+      place-items: center;
+      backdrop-filter: blur(4px);
+    }
+
+    .joystick-knob {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 35% 35%, #f5dfb0, #c9974c);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+      transform: translate(0, 0);
+      transition: transform 0.05s linear;
+    }
+
+    .touch-center-info {
+      font-size: 11px;
+      color: rgba(220, 224, 240, 0.72);
+      text-align: center;
+      padding-bottom: 10px;
+      text-shadow: 0 1px 4px #000;
+    }
+
+    .touch-actions {
+      pointer-events: auto;
+      padding-bottom: 10px;
+    }
+
+    .touch-action-btn {
+      width: 78px;
+      height: 78px;
+      border-radius: 50%;
+      border: 2px solid var(--border-gold);
+      background: radial-gradient(circle at 30% 30%, rgba(242, 166, 107, 0.42), rgba(16, 22, 44, 0.84));
+      color: #fff6e6;
+      font-family: var(--font-pixel);
+      font-size: 8px;
+      line-height: 1.4;
+      cursor: pointer;
+      backdrop-filter: blur(4px);
+      box-shadow: 0 4px 18px rgba(0, 0, 0, 0.55);
+    }
+
+    .touch-action-btn:disabled {
+      opacity: 0.35;
+      border-color: rgba(255, 255, 255, 0.25);
+    }
+
+    .touch-action-btn.active-glow { animation: pulseGlow 1.3s infinite; }
+
+    /* When touch deck is active, lift dialogue box slightly in portrait so thumbs stay clear */
+    body.has-touch .dialogue-box {
+      bottom: max(124px, calc(env(safe-area-inset-bottom) + 118px));
+    }
+    body.has-touch .interact-prompt {
+      bottom: max(116px, calc(env(safe-area-inset-bottom) + 110px));
+    }
+
+    @media (orientation: landscape) and (max-height: 540px) {
+      body.has-touch .dialogue-box {
+        bottom: 14px;
+        width: min(460px, 56vw);
+        padding: 10px 14px;
+      }
+      body.has-touch .interact-prompt {
+        bottom: 18px;
+      }
+      .touch-center-info { display: none; }
+    }
+
+    @media (max-width: 640px) {
+      .location-text { display: none; }
+      #volume-slider { width: 48px; }
+    }
+
+    /* Modals */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      z-index: 50;
+      background: rgba(5, 7, 15, 0.82);
+      backdrop-filter: blur(6px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 18px;
+    }
+
+    .polaroid-card {
+      width: min(440px, 94vw);
+      max-height: 90dvh;
+      overflow-y: auto;
+      background: #faf5ea;
+      color: #241d18;
+      border-radius: 6px;
+      padding: 16px 16px 20px;
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.85);
+      animation: fadeSlideUp 0.35s ease;
+    }
+
+    .polaroid-photo-frame {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 3 / 2;
+      background: #171b2e;
+      border-radius: 3px;
+      overflow: hidden;
+      margin-bottom: 14px;
+    }
+
+    .polaroid-photo-frame img,
+    .polaroid-photo-frame canvas {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .polaroid-photo-frame canvas { image-rendering: pixelated; }
+
+    .polaroid-badge {
+      position: absolute;
+      top: 8px; left: 8px;
+      font-family: var(--font-pixel);
+      font-size: 8px;
+      background: rgba(12, 15, 28, 0.82);
+      color: #f4d38c;
+      padding: 4px 8px;
+      border-radius: 4px;
+    }
+
+    .polaroid-body h2 { font-family: var(--font-letter); font-size: 20px; margin: 0 0 8px; color: #2a1e16; }
+    .memory-short { font-weight: 700; font-size: 14px; color: #6b4933; margin: 0 0 10px; }
+    .memory-story { font-family: var(--font-letter); font-size: 14px; line-height: 1.6; margin: 0 0 10px; color: #382e27; }
+    .memory-meaning {
+      font-family: var(--font-letter);
+      font-style: italic;
+      font-size: 13px;
+      line-height: 1.5;
+      padding-left: 10px;
+      border-left: 3px solid #d59f53;
+      color: #5b493c;
+      margin: 0 0 14px;
+    }
+    .polaroid-footer { display: flex; justify-content: center; }
+
+    .confirm-card {
+      width: min(360px, 90vw);
+      background: #0f1428;
+      border: 2px solid var(--border-gold);
+      border-radius: 10px;
+      padding: 22px;
+      text-align: center;
+    }
+
+    .confirm-card h3 { font-family: var(--font-pixel); font-size: 13px; color: var(--border-gold); margin: 0 0 12px; }
+    .confirm-card p { font-size: 14px; line-height: 1.5; color: var(--text-muted); margin: 0 0 18px; }
+    .confirm-actions { display: flex; justify-content: center; gap: 10px; }
+
+    /* Ending Letter Overlay */
+    .ending-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 40;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      background: radial-gradient(circle at center, rgba(14, 18, 38, 0.58) 0%, rgba(5, 7, 15, 0.88) 100%);
+      pointer-events: auto;
+    }
+
+    .envelope-stage { text-align: center; animation: fadeSlideUp 0.8s ease; }
+
+    .envelope-wrapper {
+      position: relative;
+      width: 240px;
+      height: 160px;
+      margin: 0 auto 20px;
+    }
+
+    .envelope-back {
+      position: absolute; inset: 0;
+      background: #d8c29d;
+      border-radius: 6px;
+      box-shadow: 0 18px 40px rgba(0, 0, 0, 0.7);
+    }
+
+    .envelope-letter-preview {
+      position: absolute;
+      left: 14px; right: 14px; top: 14px;
+      height: 130px;
+      background: #fcf6ea;
+      border-radius: 4px;
+      transition: transform 1.2s ease;
+    }
+
+    .envelope-front {
+      position: absolute; inset: 0;
+      background: linear-gradient(160deg, #ead8b8 0%, #cfb68d 100%);
+      clip-path: polygon(0 0, 50% 54%, 100% 0, 100% 100%, 0 100%);
+      border-radius: 6px;
+    }
+
+    .envelope-flap {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 55%;
+      background: #e2cca6;
+      clip-path: polygon(0 0, 100% 0, 50% 100%);
+      transform-origin: top center;
+      transition: transform 0.9s ease;
+      z-index: 3;
+    }
+
+    .wax-seal {
+      position: absolute;
+      left: 50%; top: 48%;
+      transform: translate(-50%, -50%);
+      width: 34px; height: 34px;
+      border-radius: 50%;
+      background: #b54552;
+      color: #ffe8e8;
+      display: grid;
+      place-items: center;
+      font-size: 14px;
+      z-index: 4;
+      box-shadow: 0 3px 10px rgba(0, 0, 0, 0.4);
+      transition: opacity 0.4s ease, transform 0.4s ease;
+    }
+
+    .envelope-wrapper.open .wax-seal { opacity: 0; transform: translate(-50%, -50%) scale(1.3); }
+    .envelope-wrapper.open .envelope-flap { transform: rotateX(180deg); z-index: 0; }
+    .envelope-wrapper.open .envelope-letter-preview { transform: translateY(-58px); }
+
+    .envelope-caption { font-family: var(--font-letter); font-style: italic; color: #f3e4cb; font-size: 17px; }
+
+    .letter-stage { width: min(600px, 94vw); max-height: 86dvh; display: flex; justify-content: center; }
+
+    .letter-paper {
+      width: 100%;
+      max-height: 86dvh;
+      overflow-y: auto;
+      background: linear-gradient(180deg, #fcf6e8 0%, #f5ebd5 100%);
+      color: #2c231c;
+      border: 2px solid #d5bc92;
+      border-radius: 8px;
+      padding: clamp(22px, 4vw, 38px);
+      box-shadow: 0 24px 65px rgba(0, 0, 0, 0.85);
+      animation: fadeSlideUp 0.9s ease;
+    }
+
+    .letter-ornament { text-align: center; color: #b78d51; font-size: 13px; margin-bottom: 18px; letter-spacing: 0.4em; }
+    .letter-content { font-family: var(--font-letter); font-size: clamp(14px, 2vw, 17px); line-height: 1.75; white-space: pre-wrap; }
+    .letter-paragraph { margin: 0 0 14px; opacity: 0; transform: translateY(6px); animation: lineAppear 0.7s ease forwards; }
+    .letter-controls { margin-top: 24px; text-align: center; }
+
+    .final-end-stage { text-align: center; max-width: 560px; padding: 24px; animation: fadeSlideUp 1.5s ease; }
+    .the-end-title {
+      font-family: var(--font-pixel);
+      font-size: clamp(22px, 4vw, 34px);
+      letter-spacing: 0.14em;
+      color: #fff6e6;
+      margin: 0 0 16px;
+      text-shadow: 0 0 24px rgba(230, 198, 135, 0.45);
+    }
+    .the-end-subtitle { font-family: var(--font-letter); font-style: italic; font-size: clamp(15px, 2.2vw, 19px); color: #dfd3bf; margin: 0 0 30px; }
+    .final-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; }
+
+    @keyframes fadeSlideUp {
+      from { opacity: 0; transform: translateY(14px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes lineAppear {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes chapterFade {
+      0% { opacity: 0; transform: translate(-50%, 8px); }
+      18% { opacity: 1; transform: translate(-50%, 0); }
+      82% { opacity: 1; transform: translate(-50%, 0); }
+      100% { opacity: 0; transform: translate(-50%, -6px); }
+    }
+    @keyframes pulseFloat {
+      0%, 100% { transform: translate(-50%, 0); }
+      50% { transform: translate(-50%, -4px); }
+    }
+    @keyframes pulseGlow {
+      0%, 100% { box-shadow: 0 0 8px rgba(230, 198, 135, 0.4); }
+      50% { box-shadow: 0 0 20px rgba(230, 198, 135, 0.9); }
+    }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <main id="stage-area">
+      <div id="game-container"></div>
+    </main>
+
+    <header id="top-hud" class="hud-bar hidden">
+      <div class="hud-left">
+        <span id="chapter-badge" class="pixel-badge">CHAPTER 1</span>
+        <span id="location-label" class="location-text">Jalan Kecil & Padang Rumput Fajar</span>
+      </div>
+      <div class="hud-right">
+        <div class="audio-control-wrap">
+          <button id="btn-mute" class="icon-btn" title="Mute / Unmute" aria-label="Mute or Unmute">
+            <span id="mute-icon">🔊</span>
+          </button>
+          <input id="volume-slider" type="range" min="0" max="100" value="70" aria-label="Music Volume" />
+        </div>
+        <button id="btn-fullscreen" class="icon-btn" title="Layar Penuh" aria-label="Toggle Fullscreen">⛶</button>
+        <button id="btn-restart-hud" class="icon-btn" title="Ulangi dari awal" aria-label="Restart Journey">↺</button>
+      </div>
+    </header>
+
+    <div id="rotate-hint" class="rotate-hint hidden">
+      <span>📱 Putar layar ke mode landscape untuk pandangan lebih luas</span>
+      <button id="btn-dismiss-rotate" aria-label="Tutup petunjuk">✕</button>
+    </div>
+
+    <div id="opening-overlay" class="overlay-layer hidden">
+      <div class="title-card">
+        <p class="eyebrow">AN INTERACTIVE PIXEL FILM</p>
+        <h1 class="main-title">A JOURNEY TO PROVE MY LOVE</h1>
+        <p class="subtitle">A story written in little steps, for Maya.</p>
+        <div class="opening-actions">
+          <button id="btn-continue" class="pixel-btn primary hidden">CONTINUE JOURNEY</button>
+          <button id="btn-start" class="pixel-btn primary">START JOURNEY</button>
+          <button id="btn-restart-opening" class="pixel-btn ghost hidden">START FROM BEGINNING</button>
+        </div>
+        <p id="save-info-text" class="save-hint hidden"></p>
+      </div>
+    </div>
+
+    <div id="chapter-toast" class="chapter-toast hidden">
+      <div class="chapter-toast-line"></div>
+      <div id="chapter-toast-num" class="chapter-toast-num">CHAPTER 1</div>
+      <div id="chapter-toast-title" class="chapter-toast-title">THE FIRST STEP</div>
+      <div class="chapter-toast-line"></div>
+    </div>
+
+    <div id="dialogue-box" class="dialogue-box hidden">
+      <div id="dialogue-speaker" class="dialogue-speaker">Ciell</div>
+      <p id="dialogue-text" class="dialogue-text"></p>
+      <div class="dialogue-footer">
+        <span class="dialogue-hint">Tekan Space / Enter atau ketuk untuk lanjut</span>
+        <button id="btn-dialogue-next" class="pixel-btn small">NEXT ▶</button>
+      </div>
+    </div>
+
+    <div id="interact-prompt" class="interact-prompt hidden">
+      <span id="interact-prompt-label">[E / TAP] Periksa Kenangan</span>
+    </div>
+
+    <section id="touch-deck" class="touch-deck hidden">
+      <div class="joystick-zone" id="joystick-zone">
+        <div class="joystick-base" id="joystick-base">
+          <div class="joystick-knob" id="joystick-knob"></div>
+        </div>
+      </div>
+      <div class="touch-center-info">
+        <span id="touch-hint-text">Geser untuk berjalan</span>
+      </div>
+      <div class="touch-actions">
+        <button id="btn-touch-action" class="touch-action-btn" disabled>
+          <span id="touch-action-label">PERIKSA</span>
+        </button>
+      </div>
+    </section>
+
+    <div id="memory-modal" class="modal-backdrop hidden">
+      <div class="polaroid-card">
+        <div class="polaroid-photo-frame">
+          <img id="memory-photo" alt="Memory Polaroid" class="hidden" />
+          <canvas id="memory-fallback-canvas" width="240" height="160"></canvas>
+          <span class="polaroid-badge" id="memory-tag">MEMORY</span>
+        </div>
+        <div class="polaroid-body">
+          <h2 id="memory-title">Kenangan Kecil</h2>
+          <p id="memory-short" class="memory-short"></p>
+          <p id="memory-story" class="memory-story"></p>
+          <p id="memory-meaning" class="memory-meaning"></p>
+        </div>
+        <div class="polaroid-footer">
+          <button id="btn-close-memory" class="pixel-btn primary">Simpan di Hati</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="ending-overlay" class="ending-overlay hidden">
+      <div id="envelope-stage" class="envelope-stage hidden">
+        <div class="envelope-wrapper" id="envelope-wrapper">
+          <div class="envelope-back"></div>
+          <div class="envelope-letter-preview"></div>
+          <div class="envelope-front"></div>
+          <div class="envelope-flap"></div>
+          <div class="wax-seal">❤</div>
+        </div>
+        <p class="envelope-caption">Sebuah surat untuk Maya...</p>
+      </div>
+
+      <div id="letter-stage" class="letter-stage hidden">
+        <div class="letter-paper">
+          <div class="letter-ornament">✦ ✦ ✦</div>
+          <div id="letter-content" class="letter-content"></div>
+          <div id="letter-controls" class="letter-controls hidden">
+            <button id="btn-finish-letter" class="pixel-btn primary">Selesai Membaca</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="final-end-stage" class="final-end-stage hidden">
+        <h2 class="the-end-title">THE END</h2>
+        <p class="the-end-subtitle">Some journeys end, but the memories remain.</p>
+        <div class="final-actions">
+          <button id="btn-reread-letter" class="pixel-btn ghost">Baca Surat Lagi</button>
+          <button id="btn-replay-journey" class="pixel-btn primary">Ulangi Perjalanan</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="confirm-modal" class="modal-backdrop hidden">
+      <div class="confirm-card">
+        <h3>Ulangi Perjalanan?</h3>
+        <p>Progres checkpoint saat ini akan dihapus dan perjalanan dimulai kembali dari awal.</p>
+        <div class="confirm-actions">
+          <button id="btn-cancel-restart" class="pixel-btn ghost">Batal</button>
+          <button id="btn-confirm-restart" class="pixel-btn primary">Ya, Ulangi</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/phaser@3.88.2/dist/phaser.min.js"></script>
+
+  <script>
+  (function () {
+    'use strict';
+
+    window.JourneyGame = window.JourneyGame || {};
+
+    /* Helper skala responsif agar selalu tajam & full-screen di HP, tablet, laptop, & ultrawide */
+    function computeBaseZoom(w, h) {
+      if (w >= h) {
+        return Math.max(1.2, h / 265);
+      }
+      return Math.max(1.3, Math.min(w / 245, h / 280));
+    }
+
+    /* =========================================================================
+     * 1. STORY DATA (CIELL -> MAYA)
+     * ========================================================================= */
+    window.JourneyGame.STORY = {
+      worldWidth: 6600,
+      groundY: 286,
+
+      chapters: [
+        { id: 1, num: 'CHAPTER 1', title: 'THE FIRST STEP', locationName: 'Jalan Kecil & Padang Rumput Fajar', startX: 40 },
+        { id: 2, num: 'CHAPTER 2', title: 'THROUGH THE RAIN', locationName: 'Hutan Hujan & Jembatan Sungai', startX: 1120 },
+        { id: 3, num: 'CHAPTER 3', title: 'THINGS I REMEMBER', locationName: 'Danau Pantulan Bulan', startX: 2450 },
+        { id: 4, num: 'CHAPTER 4', title: "WHAT I COULDN'T SAY", locationName: 'Bukit Matahari Terbenam', startX: 4050 },
+        { id: 5, num: 'CHAPTER 5', title: 'THE LAST DESTINATION', locationName: 'Taman Bunga & Pohon Besar', startX: 5350 }
+      ],
+
+      beats: [
+        {
+          id: 'ch1_intro',
+          triggerX: 70,
+          chapter: 1,
+          lines: [
+            {
+              speaker: 'Ciell',
+              text: 'Aku tidak tahu seberapa jauh perjalanan ini akan membawaku. Tapi ada sesuatu yang ingin kusampaikan kepadamu, Maya.'
+            },
+            {
+              speaker: 'Ciell',
+              text: 'Di bawah langit malam yang tenang, aku sering sadar bahwa ada keindahan dalam dirimu yang tak pernah sanggup dirangkai oleh kalimat mana pun.'
+            },
+            {
+              speaker: 'Ciell',
+              text: 'Bukan karena kata-kata kurang banyak, melainkan karena beberapa hal memang lebih tepat dijalani pelan-pelan daripada sekadar diucapkan.'
+            }
+          ]
+        },
+        {
+          id: 'ch1_sunrise',
+          triggerX: 620,
+          chapter: 1,
+          lines: [
+            {
+              speaker: 'Narasi',
+              text: 'Ketika cahaya pertama menyentuh padang rumput, aku teringat bagaimana kehadiranmu terasa seperti fajar—tenang, namun diam-diam mengubah warna seluruh pagi.'
+            }
+          ]
+        },
+        {
+          id: 'ch2_rain_start',
+          triggerX: 1160,
+          chapter: 2,
+          lines: [
+            {
+              speaker: 'Ciell',
+              text: 'Langit kemudian meredup, menyembunyikan bintang di balik awan hujan. Perjalanan ini memang tidak selalu melintasi jalan yang terang.'
+            },
+            {
+              speaker: 'Ciell',
+              text: 'Aku tahu aku pernah keliru, pernah kurang peka, dan masih memiliki banyak hal yang harus kupelajari.'
+            },
+            {
+              speaker: 'Ciell',
+              text: 'Namun hujan mengajarkanku tentang kesabaran—bahwa ketulusan diuji saat langkah terasa berat, bukan hanya saat langit sedang cerah.'
+            }
+          ]
+        },
+        {
+          id: 'ch2_bridge',
+          triggerX: 1960,
+          chapter: 2,
+          lines: [
+            {
+              speaker: 'Narasi',
+              text: 'Di atas jembatan kayu ini, arus sungai memantulkan titik-titik cahaya kecil di sela gerimis. Pelan, jujur, dan tetap mengalir menuju tempat yang ia tuju.'
+            }
+          ]
+        },
+        {
+          id: 'ch3_intro',
+          triggerX: 2500,
+          chapter: 3,
+          lines: [
+            {
+              speaker: 'Ciell',
+              text: 'Di tepi danau yang tenang, bulan beristirahat di atas permukaan air yang gelap. Mengingatkanku padamu, Maya—indah tanpa perlu meminta perhatian, cukup hadir dan menenangkan.'
+            },
+            {
+              speaker: 'Narasi',
+              text: 'Ada beberapa benda kecil di sepanjang tepian ini. Masing-masing menyimpan potongan ingatan yang ingin kujaga untukmu.'
+            }
+          ]
+        },
+        {
+          id: 'ch4_sunset',
+          triggerX: 4220,
+          chapter: 4,
+          lines: [
+            {
+              speaker: 'Ciell',
+              text: 'Kadang aku punya begitu banyak hal untuk dikatakan, tetapi tidak semuanya mudah disampaikan.'
+            },
+            {
+              speaker: 'Ciell',
+              text: 'Mencoba melukiskan dirimu dengan kata-kata selalu terasa seperti mencoba menggenggam warna senja—terlalu luas dan terlalu lembut untuk dibatasi kalimat.'
+            },
+            {
+              speaker: 'Ciell',
+              text: 'Karena itu, aku tidak ingin berhenti pada ucapan semata. Aku ingin membuktikannya lewat sikap yang nyata, perhatian yang tulus, dan kesungguhan setiap hari.'
+            }
+          ]
+        },
+        {
+          id: 'ch5_garden',
+          triggerX: 5400,
+          chapter: 5,
+          lines: [
+            {
+              speaker: 'Narasi',
+              text: 'Akhirnya langkah ini tiba di taman kecil di bawah langit malam. Bunga-bunga bergerak pelan, dan cahaya bintang kembali menyapa di antara dahan pohon besar.'
+            },
+            {
+              speaker: 'Narasi',
+              text: 'Di depan sana berdiri sebuah kotak surat kayu—tempat seluruh perjalanan panjang ini bermuara.'
+            }
+          ]
+        }
+      ],
+
+      memories: [
+        {
+          id: 'mem_1',
+          x: 2740,
+          spriteKey: 'mem_polaroid',
+          tag: 'KENANGAN I',
+          title: 'Sebuah Foto di Pinggir Jalan',
+          shortMessage: 'Tentang sore sederhana yang cahayanya masih terasa sampai sekarang.',
+          story: 'Kita tidak pernah membutuhkan tempat istimewa agar sebuah hari terasa utuh. Bersamamu, obrolan ringan dan tawa kecil di pinggir jalan sudah cukup membuat waktu berjalan lebih lembut.',
+          meaningNote: 'Bagi banyak orang itu mungkin hanya hari biasa, Maya. Bagiku, di situlah cahaya hangat itu pertama kali menetap.',
+          photoSrc: 'assets/photos/kenangan-1.jpg',
+          fallbackTheme: 'sunset_walk'
+        },
+        {
+          id: 'mem_2',
+          x: 3090,
+          spriteKey: 'mem_coffee',
+          tag: 'KENANGAN II',
+          title: 'Cangkir Hangat di Hari Biasa',
+          shortMessage: 'Tentang ketenangan yang selalu kutemukan saat mengingatmu.',
+          story: 'Ada hari-hari ketika langkah terasa lelah dan pikiran penuh oleh banyak hal. Namun caramu mendengar dan peduli selalu hadir seperti jeda yang meneduhkan.',
+          meaningNote: 'Dari situ aku belajar bahwa perhatian tidak harus bersuara keras untuk bisa dirasakan sedalam itu, Maya.',
+          photoSrc: 'assets/photos/kenangan-2.jpg',
+          fallbackTheme: 'warm_cafe'
+        },
+        {
+          id: 'mem_3',
+          x: 3440,
+          spriteKey: 'mem_flower',
+          tag: 'KENANGAN III',
+          title: 'Kelopak Bunga yang Tersimpan',
+          shortMessage: 'Tentang keindahan yang tumbuh perlahan, seperti bunga yang mekar pada waktunya.',
+          story: 'Setiap kali melihat kelopak bunga bergerak pelan disentuh angin, aku teringat betapa sulitnya menjelaskan pesonamu dengan kata-kata. Ia tidak mencolok, justru indah karena ketulusan yang alami.',
+          meaningNote: 'Seperti merawat bunga, aku ingin menjaga perasaan ini untukmu dengan kesabaran, kejujuran, dan usaha yang tidak tergesa.',
+          photoSrc: 'assets/photos/kenangan-3.jpg',
+          fallbackTheme: 'flower_field'
+        },
+        {
+          id: 'mem_4',
+          x: 3780,
+          spriteKey: 'mem_musicbox',
+          tag: 'KENANGAN IV',
+          title: 'Lentera Bintang Kecil',
+          shortMessage: 'Tentang harapan-harapan baik yang kutitipkan di bawah langit malam.',
+          story: 'Di antara ribuan bintang yang jauh, selalu ada satu titik yang mengingatkanku untuk mendoakan harimu, Maya. Semoga langkahmu selalu ringan, dan senyummu tidak pernah kehilangan alasannya.',
+          meaningNote: 'Semua yang belum sempat kukatakan secara langsung, kubawa menuju akhir jalan ini.',
+          photoSrc: 'assets/photos/kenangan-4.jpg',
+          fallbackTheme: 'starry_lake'
+        }
+      ],
+
+      mailboxX: 6260,
+
+      finalLetterParagraphs: [
+        'Dear Maya,',
+        'Perjalanan ini mungkin hanya sebuah dunia kecil yang kubuat dengan sederhana. Namun di balik setiap langkahnya, ada sesuatu yang sudah lama ingin kusampaikan kepadamu.',
+        'Ada kalanya aku mencoba mencari kalimat yang tepat untuk menggambarkan betapa berharganya dirimu—tentang keteduhan yang terasa seperti bulan di atas air, kehangatan yang hadir seperti cahaya pagi, dan keindahan yang lembut seperti bunga di bawah langit malam.',
+        'Tetapi semakin aku mencoba menuliskannya, semakin aku sadar bahwa keindahanmu memang tidak pernah mudah dijelaskan oleh kata-kata. Ia lebih terasa di dalam hati yang tenang.',
+        'Karena itu, aku tidak ingin hanya mengatakan bahwa aku menyayangimu. Aku ingin belajar membuktikannya melalui hal-hal kecil—melalui kejujuran, kesabaran, perhatian, dan usaha yang terus kujaga.',
+        'Aku tahu tidak ada perjalanan yang selalu mudah, dan aku pun bukan seseorang yang sempurna. Namun perasaan yang tulus seharusnya tidak berhenti sebagai kata-kata yang diucapkan lalu dilupakan.',
+        'Terima kasih sudah menjadi bagian paling tenang sekaligus paling berarti dari cerita ini, Maya.',
+        'With love,\nCiell'
+      ]
+    };
+
+    /* =========================================================================
+     * 2. SAVE SYSTEM
+     * ========================================================================= */
+    window.JourneyGame.SaveSystem = (function () {
+      const SAVE_KEY = 'journey_prove_love_maya_v1';
+      const AUDIO_KEY = 'journey_prove_love_audio_v1';
+
+      function loadProgress() {
+        try {
+          const raw = localStorage.getItem(SAVE_KEY);
+          if (!raw) return null;
+          const parsed = JSON.parse(raw);
+          return typeof parsed.playerX === 'number' ? parsed : null;
+        } catch (e) { return null; }
+      }
+
+      function saveProgress(data) {
+        try {
+          localStorage.setItem(SAVE_KEY, JSON.stringify({
+            chapter: data.chapter || 1,
+            playerX: Math.round(data.playerX || 70),
+            triggeredBeats: Array.isArray(data.triggeredBeats) ? data.triggeredBeats : [],
+            visitedMemories: Array.isArray(data.visitedMemories) ? data.visitedMemories : [],
+            updatedAt: Date.now()
+          }));
+        } catch (e) {}
+      }
+
+      function clearProgress() {
+        try { localStorage.removeItem(SAVE_KEY); } catch (e) {}
+      }
+
+      function loadAudioSettings() {
+        try {
+          const raw = localStorage.getItem(AUDIO_KEY);
+          if (!raw) return { volume: 0.7, muted: false };
+          const p = JSON.parse(raw);
+          return { volume: typeof p.volume === 'number' ? p.volume : 0.7, muted: Boolean(p.muted) };
+        } catch (e) { return { volume: 0.7, muted: false }; }
+      }
+
+      function saveAudioSettings(settings) {
+        try { localStorage.setItem(AUDIO_KEY, JSON.stringify(settings)); } catch (e) {}
+      }
+
+      return { loadProgress, saveProgress, clearProgress, loadAudioSettings, saveAudioSettings };
+    })();
+
+    /* =========================================================================
+     * 3. AUDIO ENGINE
+     * ========================================================================= */
+    window.JourneyGame.AudioEngine = (function () {
+      let ctx = null, masterGain = null, musicGain = null, sfxGain = null;
+      let rainGain = null, windGain = null;
+      let initialized = false, currentChapter = 1, stepIndex = 0, chordIndex = 0;
+      let isPlayingMusic = false;
+      let volume = 0.7, muted = false, duckFactor = 1.0;
+
+      const NOTES = {
+        C3: 130.81, D3: 146.83, Eb3: 155.56, E3: 164.81, F3: 174.61, G3: 196.00, Ab3: 207.65, A3: 220.00, Bb3: 233.08, B3: 246.94,
+        C4: 261.63, D4: 293.66, Eb4: 311.13, E4: 329.63, F4: 349.23, G4: 392.00, Ab4: 415.30, A4: 440.00, Bb4: 466.16, B4: 493.88,
+        C5: 523.25, D5: 587.33, Eb5: 622.25, E5: 659.25, F5: 698.46, G5: 783.99, Ab5: 830.61, A5: 880.00, Bb5: 932.33, B5: 987.77
+      };
+
+      const CHAPTER_THEMES = {
+        1: { tempoMs: 560, chords: [['C3','G3','E4','B4'],['A3','E4','C5','G4'],['F3','C4','A4','E5'],['G3','D4','B4','D5']], melody: ['E5',null,'G5','E5','D5',null,'C5','D5'] },
+        2: { tempoMs: 650, chords: [['D3','A3','F4','C5'],['Bb3','F4','D5','A4'],['G3','D4','Bb4','F4'],['A3','E4','C5','E4']], melody: ['F5',null,'E5','D5',null,'A4','C5',null] },
+        3: { tempoMs: 590, chords: [['F3','C4','A4','E5'],['E3','B3','G4','D5'],['D3','A3','F4','C5'],['C3','G3','E4','B4']], melody: ['A5','G5',null,'E5','F5',null,'D5','C5'] },
+        4: { tempoMs: 620, chords: [['Ab3','Eb4','C5','G5'],['F3','C4','Ab4','Eb5'],['D3','Ab3','F4','C5'],['Eb3','Bb3','G4','D5']], melody: ['G5',null,'Ab5','G5','Eb5',null,'F5','Eb5'] },
+        5: { tempoMs: 740, chords: [['C3','G3','E4','B4'],['F3','C4','A4','E5']], melody: ['E5',null,null,'B4','C5',null,null,null] },
+        6: { tempoMs: 640, chords: [['C3','G3','E4','B4'],['G3','D4','B4','G5'],['A3','E4','C5','G5'],['F3','C4','A4','E5']], melody: ['E5','G5','B4',null,'C5','E5','D5',null] }
+      };
+
+      function init() {
+        if (initialized) {
+          if (ctx && ctx.state === 'suspended') ctx.resume();
+          return;
+        }
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        if (!AudioCtx) return;
+
+        ctx = new AudioCtx();
+        masterGain = ctx.createGain();
+        musicGain = ctx.createGain();
+        sfxGain = ctx.createGain();
+
+        musicGain.connect(masterGain);
+        sfxGain.connect(masterGain);
+        masterGain.connect(ctx.destination);
+
+        const saved = window.JourneyGame.SaveSystem.loadAudioSettings();
+        volume = saved.volume;
+        muted = saved.muted;
+        applyGain();
+        setupAmbience();
+        initialized = true;
+      }
+
+      function applyGain() {
+        if (!masterGain || !ctx) return;
+        masterGain.gain.setTargetAtTime(muted ? 0 : volume, ctx.currentTime, 0.08);
+        if (musicGain) musicGain.gain.setTargetAtTime(0.45 * duckFactor, ctx.currentTime, 0.25);
+      }
+
+      function setupAmbience() {
+        const bufferSize = ctx.sampleRate * 2;
+        const noiseBuffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+        const output = noiseBuffer.getChannelData(0);
+        let lastOut = 0;
+        for (let i = 0; i < bufferSize; i++) {
+          const white = Math.random() * 2 - 1;
+          output[i] = ((lastOut + 0.03 * white) / 1.03);
+          lastOut = output[i];
+          output[i] *= 2.6;
+        }
+
+        const rainNode = ctx.createBufferSource();
+        rainNode.buffer = noiseBuffer; rainNode.loop = true;
+        const rainFilter = ctx.createBiquadFilter();
+        rainFilter.type = 'bandpass'; rainFilter.frequency.value = 1400; rainFilter.Q.value = 0.7;
+        rainGain = ctx.createGain(); rainGain.gain.value = 0;
+        rainNode.connect(rainFilter); rainFilter.connect(rainGain); rainGain.connect(sfxGain);
+        rainNode.start();
+
+        const windNode = ctx.createBufferSource();
+        windNode.buffer = noiseBuffer; windNode.loop = true;
+        const windFilter = ctx.createBiquadFilter();
+        windFilter.type = 'lowpass'; windFilter.frequency.value = 420;
+        windGain = ctx.createGain(); windGain.gain.value = 0;
+        windNode.connect(windFilter); windFilter.connect(windGain); windGain.connect(sfxGain);
+        windNode.start();
+      }
+
+      function playPianoNote(freq, duration = 1.6, gainAmt = 0.16) {
+        if (!ctx || !musicGain || !freq) return;
+        const now = ctx.currentTime;
+        const osc = ctx.createOscillator();
+        const oscOver = ctx.createOscillator();
+        const overGain = ctx.createGain();
+        const filter = ctx.createBiquadFilter();
+        const env = ctx.createGain();
+
+        osc.type = 'triangle'; osc.frequency.setValueAtTime(freq, now);
+        oscOver.type = 'sine'; oscOver.frequency.setValueAtTime(freq * 2, now);
+        overGain.gain.setValueAtTime(0.22, now);
+
+        filter.type = 'lowpass';
+        filter.frequency.setValueAtTime(1900, now);
+        filter.frequency.exponentialRampToValueAtTime(480, now + duration);
+
+        env.gain.setValueAtTime(0.001, now);
+        env.gain.linearRampToValueAtTime(gainAmt, now + 0.025);
+        env.gain.exponentialRampToValueAtTime(0.0008, now + duration);
+
+        osc.connect(filter);
+        oscOver.connect(overGain); overGain.connect(filter);
+        filter.connect(env); env.connect(musicGain);
+
+        osc.start(now); oscOver.start(now);
+        osc.stop(now + duration + 0.05); oscOver.stop(now + duration + 0.05);
+      }
+
+      function playChiptuneBell(freq, duration = 0.45, gainAmt = 0.05) {
+        if (!ctx || !musicGain || !freq) return;
+        const now = ctx.currentTime;
+        const osc = ctx.createOscillator();
+        const filter = ctx.createBiquadFilter();
+        const env = ctx.createGain();
+
+        osc.type = 'square'; osc.frequency.setValueAtTime(freq, now);
+        filter.type = 'lowpass'; filter.frequency.setValueAtTime(1400, now);
+
+        env.gain.setValueAtTime(0.001, now);
+        env.gain.linearRampToValueAtTime(gainAmt, now + 0.012);
+        env.gain.exponentialRampToValueAtTime(0.0005, now + duration);
+
+        osc.connect(filter); filter.connect(env); env.connect(musicGain);
+        osc.start(now); osc.stop(now + duration + 0.03);
+      }
+
+      function tickMusic() {
+        if (!isPlayingMusic || !ctx) return;
+        const theme = CHAPTER_THEMES[currentChapter] || CHAPTER_THEMES[1];
+        const chord = theme.chords[chordIndex % theme.chords.length];
+        const noteName = chord[stepIndex % chord.length];
+
+        if (stepIndex % 4 === 0) playPianoNote(NOTES[chord[0]], 2.1, 0.14);
+        if (NOTES[noteName]) playPianoNote(NOTES[noteName], 1.35, 0.10);
+
+        const melNote = theme.melody[stepIndex % theme.melody.length];
+        if (melNote && NOTES[melNote]) playChiptuneBell(NOTES[melNote], 0.55, 0.035);
+
+        stepIndex++;
+        if (stepIndex % 8 === 0) chordIndex++;
+        setTimeout(tickMusic, theme.tempoMs);
+      }
+
+      function startMusic(chapter = 1) {
+        init();
+        currentChapter = chapter;
+        if (isPlayingMusic) return;
+        isPlayingMusic = true;
+        stepIndex = 0; chordIndex = 0;
+        tickMusic();
+      }
+
+      function setChapter(chapter) { currentChapter = chapter; }
+      function setMusicDuck(factor) { duckFactor = Math.max(0.05, Math.min(1, factor)); applyGain(); }
+
+      function setAmbience(rainLevel, windLevel) {
+        if (!ctx || !rainGain || !windGain) return;
+        rainGain.gain.setTargetAtTime(rainLevel * 0.14, ctx.currentTime, 0.5);
+        windGain.gain.setTargetAtTime(windLevel * 0.08, ctx.currentTime, 0.6);
+      }
+
+      function playFootstep(surface = 'grass') {
+        if (!ctx || !sfxGain || muted) return;
+        const now = ctx.currentTime;
+        const osc = ctx.createOscillator();
+        const env = ctx.createGain();
+        osc.type = 'triangle';
+        const baseFreq = surface === 'wood' ? 145 : 95;
+        osc.frequency.setValueAtTime(baseFreq + Math.random() * 22, now);
+        osc.frequency.exponentialRampToValueAtTime(40, now + 0.07);
+        env.gain.setValueAtTime(0.06, now);
+        env.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
+        osc.connect(env); env.connect(sfxGain);
+        osc.start(now); osc.stop(now + 0.09);
+      }
+
+      function playChime() {
+        if (!ctx || !sfxGain || muted) return;
+        playPianoNote(NOTES.E5, 0.7, 0.11);
+        setTimeout(() => playPianoNote(NOTES.B5, 0.9, 0.09), 110);
+      }
+
+      function setVolume(val) {
+        volume = Math.max(0, Math.min(1, val));
+        applyGain();
+        window.JourneyGame.SaveSystem.saveAudioSettings({ volume, muted });
+      }
+
+      function toggleMute() {
+        muted = !muted;
+        applyGain();
+        window.JourneyGame.SaveSystem.saveAudioSettings({ volume, muted });
+        return muted;
+      }
+
+      return {
+        init, startMusic, setChapter, setMusicDuck, setAmbience,
+        playFootstep, playChime, setVolume, toggleMute,
+        getState: () => ({ volume, muted })
+      };
+    })();
+
+    /* =========================================================================
+     * 4. PROCEDURAL 16-BIT PIXEL ART FACTORY
+     * ========================================================================= */
+    window.JourneyGame.AssetFactory = (function () {
+      function makeCanvas(w, h) {
+        const c = document.createElement('canvas');
+        c.width = w; c.height = h;
+        const ctx = c.getContext('2d');
+        ctx.imageSmoothingEnabled = false;
+        return { canvas: c, ctx };
+      }
+
+      function px(ctx, x, y, color, w = 1, h = 1) {
+        ctx.fillStyle = color;
+        ctx.fillRect(Math.floor(x), Math.floor(y), w, h);
+      }
+
+      function createHeroTexture(scene) {
+        if (scene.textures.exists('hero')) return;
+        const fw = 24, fh = 32;
+        const { canvas, ctx } = makeCanvas(fw * 12, fh);
+
+        const PAL = {
+          hairD: '#2a1c17', hairL: '#4a3126', skin: '#f0c5a3', skinS: '#d49d7a',
+          eye: '#1c1824', scarf: '#c9535c', scarfL: '#e5767d', coat: '#3d4c63',
+          coatD: '#2a3547', coatL: '#566885', strap: '#8c5a3c', pants: '#252938',
+          boot: '#3c261b', letter: '#f7ecd5'
+        };
+
+        function drawFrame(frameIdx, opts) {
+          const ox = frameIdx * fw, bob = opts.bob || 0;
+          const legL = opts.legL || 0, legR = opts.legR || 0, armF = opts.armF || 0;
+          const scarfTail = opts.scarfTail || 0, headShift = opts.headShift || 0;
+
+          ctx.fillStyle = 'rgba(0,0,0,0.28)';
+          ctx.fillRect(ox + 7, 29, 10, 2);
+
+          px(ctx, ox + 9 + legL, 22, PAL.pants, 3, 5);
+          px(ctx, ox + 9 + legL, 27, PAL.boot, 3, 3);
+          px(ctx, ox + 13 + legR, 22, PAL.pants, 3, 5);
+          px(ctx, ox + 13 + legR, 27, PAL.boot, 3, 3);
+
+          px(ctx, ox + 7, 15 + bob, PAL.coatD, 10, 8);
+          px(ctx, ox + 8, 14 + bob, PAL.coat, 8, 8);
+          px(ctx, ox + 9, 15 + bob, PAL.coatL, 3, 5);
+
+          px(ctx, ox + 9, 14 + bob, PAL.strap, 1, 7);
+          px(ctx, ox + 10, 16 + bob, PAL.strap, 1, 5);
+          px(ctx, ox + 7, 19 + bob, PAL.strap, 3, 4);
+
+          px(ctx, ox + 5 - scarfTail, 13 + bob, PAL.scarf, 4, 2);
+          px(ctx, ox + 4 - scarfTail, 14 + bob, PAL.scarfL, 2, 2);
+
+          px(ctx, ox + 8 + headShift, 5 + bob, PAL.hairD, 8, 5);
+          px(ctx, ox + 9 + headShift, 4 + bob, PAL.hairL, 6, 2);
+          px(ctx, ox + 9 + headShift, 8 + bob, PAL.skin, 6, 5);
+          px(ctx, ox + 8 + headShift, 8 + bob, PAL.hairD, 2, 3);
+          px(ctx, ox + 14 + headShift, 9 + bob, PAL.skinS, 1, 3);
+
+          px(ctx, ox + (opts.lookBack ? 10 : 13) + headShift, 10 + bob, PAL.eye, 1, 2);
+
+          px(ctx, ox + 8, 13 + bob, PAL.scarf, 8, 2);
+          px(ctx, ox + 10, 13 + bob, PAL.scarfL, 4, 1);
+
+          if (opts.reachLetter) {
+            px(ctx, ox + 14, 15 + bob, PAL.coatL, 5, 2);
+            px(ctx, ox + 19, 15 + bob, PAL.skin, 2, 2);
+            px(ctx, ox + 20, 14 + bob, PAL.letter, 4, 3);
+          } else {
+            px(ctx, ox + 11 + armF, 15 + bob, PAL.coatL, 3, 5);
+            px(ctx, ox + 11 + armF, 20 + bob, PAL.skin, 2, 2);
+          }
+        }
+
+        drawFrame(0, { bob: 0, scarfTail: 0 });
+        drawFrame(1, { bob: 1, scarfTail: 1 });
+        drawFrame(2, { bob: 0, legL: -2, legR: 2, armF: 2, scarfTail: 1 });
+        drawFrame(3, { bob: 1, legL: -1, legR: 1, armF: 1, scarfTail: 2 });
+        drawFrame(4, { bob: 0, legL: 0, legR: 0, armF: 0, scarfTail: 1 });
+        drawFrame(5, { bob: -1, legL: 2, legR: -2, armF: -2, scarfTail: 2 });
+        drawFrame(6, { bob: 0, legL: 1, legR: -1, armF: -1, scarfTail: 1 });
+        drawFrame(7, { bob: 1, legL: 0, legR: 0, armF: 0, scarfTail: 0 });
+        drawFrame(8, { bob: 0, headShift: -1, lookBack: true, scarfTail: 1 });
+        drawFrame(9, { bob: 0, headShift: 1, lookBack: false, scarfTail: 0 });
+        drawFrame(10, { bob: 0, reachLetter: true, scarfTail: 1 });
+        drawFrame(11, { bob: 1, reachLetter: true, scarfTail: 0 });
+
+        scene.textures.addSpriteSheet('hero', canvas, { frameWidth: fw, frameHeight: fh });
+
+        if (!scene.anims.exists('hero_idle')) {
+          scene.anims.create({ key: 'hero_idle', frames: scene.anims.generateFrameNumbers('hero', { start: 0, end: 1 }), frameRate: 2.2, repeat: -1 });
+          scene.anims.create({ key: 'hero_walk', frames: scene.anims.generateFrameNumbers('hero', { start: 2, end: 7 }), frameRate: 8.5, repeat: -1 });
+          scene.anims.create({ key: 'hero_look', frames: scene.anims.generateFrameNumbers('hero', { frames: [0, 8, 8, 0, 9, 9] }), frameRate: 2.5, repeat: -1 });
+          scene.anims.create({ key: 'hero_letter', frames: scene.anims.generateFrameNumbers('hero', { start: 10, end: 11 }), frameRate: 2, repeat: -1 });
+        }
+      }
+
+      function createEnvironmentTextures(scene) {
+        if (!scene.textures.exists('firefly')) {
+          const { canvas, ctx } = makeCanvas(8, 8);
+          ctx.fillStyle = 'rgba(255, 232, 130, 0.28)'; ctx.fillRect(1, 1, 6, 6);
+          ctx.fillStyle = 'rgba(255, 245, 175, 0.65)'; ctx.fillRect(2, 2, 4, 4);
+          px(ctx, 3, 3, '#fffbe0', 2, 2);
+          scene.textures.addCanvas('firefly', canvas);
+        }
+
+        if (!scene.textures.exists('raindrop')) {
+          const { canvas, ctx } = makeCanvas(2, 10);
+          ctx.fillStyle = 'rgba(180, 215, 255, 0.55)'; ctx.fillRect(0, 0, 1, 6);
+          ctx.fillStyle = 'rgba(225, 242, 255, 0.85)'; ctx.fillRect(1, 4, 1, 6);
+          scene.textures.addCanvas('raindrop', canvas);
+        }
+
+        if (!scene.textures.exists('petal')) {
+          const { canvas, ctx } = makeCanvas(5, 4);
+          px(ctx, 1, 0, '#f7b2c4', 3, 2);
+          px(ctx, 0, 1, '#ffd9e4', 2, 2);
+          px(ctx, 2, 2, '#e88ea5', 2, 1);
+          scene.textures.addCanvas('petal', canvas);
+        }
+
+        if (!scene.textures.exists('mist_band')) {
+          const { canvas, ctx } = makeCanvas(140, 28);
+          for (let i = 0; i < 6; i++) {
+            ctx.fillStyle = 'rgba(210, 225, 245, 0.08)';
+            ctx.fillRect(i * 14, 10 - (i % 2) * 3, 68, 12);
+          }
+          scene.textures.addCanvas('mist_band', canvas);
+        }
+
+        if (!scene.textures.exists('mtn_far')) {
+          const { canvas, ctx } = makeCanvas(240, 110);
+          const pts = [0, 82, 35, 46, 68, 65, 115, 26, 158, 58, 196, 36, 240, 82];
+          ctx.fillStyle = '#242c4a';
+          ctx.beginPath(); ctx.moveTo(0, 110);
+          for (let i = 0; i < pts.length; i += 2) ctx.lineTo(pts[i], pts[i + 1]);
+          ctx.lineTo(240, 110); ctx.closePath(); ctx.fill();
+
+          ctx.fillStyle = '#333e63';
+          ctx.beginPath(); ctx.moveTo(115, 26); ctx.lineTo(132, 48); ctx.lineTo(118, 66); ctx.lineTo(106, 48); ctx.closePath(); ctx.fill();
+          scene.textures.addCanvas('mtn_far', canvas);
+        }
+
+        if (!scene.textures.exists('hills_mid')) {
+          const { canvas, ctx } = makeCanvas(240, 80);
+          ctx.fillStyle = '#182136';
+          ctx.beginPath(); ctx.moveTo(0, 80);
+          for (let x = 0; x <= 240; x += 8) {
+            const y = 38 + Math.sin((x / 240) * Math.PI * 2) * 14 + Math.cos((x / 120) * Math.PI) * 6;
+            ctx.lineTo(x, y);
+          }
+          ctx.lineTo(240, 80); ctx.closePath(); ctx.fill();
+          scene.textures.addCanvas('hills_mid', canvas);
+        }
+
+        if (!scene.textures.exists('cloud_pixel')) {
+          const { canvas, ctx } = makeCanvas(64, 22);
+          ctx.fillStyle = 'rgba(255, 245, 235, 0.28)';
+          ctx.fillRect(10, 10, 44, 8); ctx.fillRect(18, 5, 26, 8); ctx.fillRect(24, 2, 14, 6);
+          ctx.fillStyle = 'rgba(255, 255, 255, 0.16)'; ctx.fillRect(6, 14, 52, 5);
+          scene.textures.addCanvas('cloud_pixel', canvas);
+        }
+
+        if (!scene.textures.exists('pine_tree')) {
+          const { canvas, ctx } = makeCanvas(44, 86);
+          px(ctx, 19, 62, '#3a271d', 6, 24);
+          [[22,6,10,18],[22,20,14,20],[22,36,18,22],[22,50,20,18]].forEach(([cx, topY, halfW, h]) => {
+            for (let row = 0; row < h; row++) {
+              const w = Math.max(2, Math.floor((row / h) * halfW * 2));
+              px(ctx, cx - w / 2, topY + row, '#1c3330', w, 1);
+              px(ctx, cx - w / 2, topY + row, '#274740', Math.max(1, Math.floor(w * 0.45)), 1);
+            }
+          });
+          scene.textures.addCanvas('pine_tree', canvas);
+        }
+
+        if (!scene.textures.exists('great_tree')) {
+          const { canvas, ctx } = makeCanvas(150, 165);
+          px(ctx, 64, 78, '#3b261d', 22, 87);
+          px(ctx, 56, 146, '#3b261d', 38, 19);
+          px(ctx, 48, 158, '#2d1c15', 54, 7);
+          px(ctx, 67, 82, '#523629', 7, 74);
+          px(ctx, 44, 84, '#3b261d', 22, 8);
+          px(ctx, 84, 80, '#3b261d', 24, 8);
+
+          [[75,52,46,'#1a3335'],[44,62,30,'#1e3a3b'],[106,60,30,'#1e3a3b'],[75,36,36,'#274c4a'],[52,46,24,'#2d5752'],[96,48,24,'#2d5752'],[74,24,22,'#3a6b60']]
+            .forEach(([cx, cy, r, col]) => {
+              ctx.fillStyle = col;
+              for (let dy = -r; dy <= r; dy++) {
+                for (let dx = -r; dx <= r; dx++) {
+                  if (dx * dx + dy * dy <= r * r * 0.72) ctx.fillRect(cx + dx, cy + dy, 2, 2);
+                }
+              }
+            });
+
+          [[52,42],[88,32],[104,56],[64,58],[76,22],[38,60]].forEach(([bx, by]) => px(ctx, bx, by, '#f5b8c8', 2, 2));
+          scene.textures.addCanvas('great_tree', canvas);
+        }
+
+        if (!scene.textures.exists('grass_tuft')) {
+          const { canvas, ctx } = makeCanvas(36, 12);
+          for (let f = 0; f < 3; f++) {
+            const ox = f * 12, lean = f === 0 ? 0 : f === 1 ? 1 : -1;
+            px(ctx, ox + 3, 8, '#3d694b', 1, 4); px(ctx, ox + 3 + lean, 5, '#558c5f', 1, 3);
+            px(ctx, ox + 6, 7, '#3d694b', 1, 5); px(ctx, ox + 6 + lean, 3, '#67a36d', 1, 4);
+            px(ctx, ox + 9, 8, '#3d694b', 1, 4); px(ctx, ox + 9 + lean, 5, '#558c5f', 1, 3);
+          }
+          scene.textures.addSpriteSheet('grass_tuft', canvas, { frameWidth: 12, frameHeight: 12 });
+          scene.anims.create({ key: 'grass_sway', frames: scene.anims.generateFrameNumbers('grass_tuft', { frames: [0, 1, 0, 2] }), frameRate: 3, repeat: -1 });
+        }
+
+        if (!scene.textures.exists('flower_tuft')) {
+          const { canvas, ctx } = makeCanvas(36, 14);
+          for (let f = 0; f < 3; f++) {
+            const ox = f * 12, lean = f === 0 ? 0 : f === 1 ? 1 : -1;
+            px(ctx, ox + 4, 8, '#467a50', 1, 6); px(ctx, ox + 4 + lean, 5, '#5aa162', 1, 4);
+            px(ctx, ox + 8, 9, '#467a50', 1, 5);
+            px(ctx, ox + 3 + lean, 3, '#f7b2c4', 3, 2); px(ctx, ox + 4 + lean, 4, '#ffe599', 1, 1);
+            px(ctx, ox + 7 + lean, 6, '#f4d37e', 3, 2);
+          }
+          scene.textures.addSpriteSheet('flower_tuft', canvas, { frameWidth: 12, frameHeight: 14 });
+          scene.anims.create({ key: 'flower_sway', frames: scene.anims.generateFrameNumbers('flower_tuft', { frames: [0, 1, 0, 2] }), frameRate: 2.6, repeat: -1 });
+        }
+
+        if (!scene.textures.exists('mailbox')) {
+          const { canvas, ctx } = makeCanvas(56, 40);
+          for (let f = 0; f < 2; f++) {
+            const ox = f * 28;
+            px(ctx, ox + 12, 18, '#543525', 4, 22);
+            px(ctx, ox + 13, 18, '#6e4733', 1, 20);
+            px(ctx, ox + 5, 8, '#7a4b34', 18, 11);
+            px(ctx, ox + 7, 6, '#966144', 14, 3);
+            px(ctx, ox + 6, 9, '#a66e4e', 15, 2);
+            px(ctx, ox + 19, 4, '#d15a62', 2, 7);
+            px(ctx, ox + 21, 4, '#eb7179', 3, 2);
+            if (f === 0) px(ctx, ox + 6, 12, '#3d2418', 4, 3);
+            else { px(ctx, ox + 4, 11, '#fcf2dc', 6, 4); px(ctx, ox + 5, 12, '#d15a62', 2, 1); }
+          }
+          scene.textures.addSpriteSheet('mailbox', canvas, { frameWidth: 28, frameHeight: 40 });
+        }
+
+        const artifactSpecs = [
+          { key: 'mem_polaroid', draw: (ctx) => { px(ctx, 8, 12, '#5c3f2e', 4, 12); px(ctx, 4, 3, '#f7f1e3', 12, 11); px(ctx, 6, 5, '#466b8c', 8, 6); px(ctx, 9, 6, '#f7c57c', 2, 2); }},
+          { key: 'mem_coffee', draw: (ctx) => { px(ctx, 2, 14, '#5e3d2b', 16, 4); px(ctx, 4, 18, '#40281c', 3, 6); px(ctx, 13, 18, '#40281c', 3, 6); px(ctx, 7, 8, '#f0e6d2', 6, 6); px(ctx, 13, 10, '#f0e6d2', 2, 3); px(ctx, 9, 4, 'rgba(255,255,255,0.55)', 1, 3); }},
+          { key: 'mem_flower', draw: (ctx) => { px(ctx, 6, 14, '#565c6e', 8, 10); px(ctx, 9, 8, '#53945f', 2, 6); px(ctx, 7, 4, '#f598b2', 6, 4); px(ctx, 9, 5, '#ffe694', 2, 2); }},
+          { key: 'mem_musicbox', draw: (ctx) => { px(ctx, 8, 14, '#5c3f2e', 4, 10); px(ctx, 5, 7, '#a87148', 10, 7); px(ctx, 7, 5, '#d9a466', 6, 2); px(ctx, 9, 2, '#ffeb99', 2, 2); }}
+        ];
+
+        artifactSpecs.forEach(spec => {
+          if (scene.textures.exists(spec.key)) return;
+          const { canvas, ctx } = makeCanvas(20, 24);
+          ctx.fillStyle = 'rgba(255, 224, 140, 0.16)'; ctx.fillRect(2, 2, 16, 16);
+          spec.draw(ctx);
+          scene.textures.addCanvas(spec.key, canvas);
+        });
+      }
+
+      function drawMemoryPolaroidFallback(canvasEl, theme) {
+        const ctx = canvasEl.getContext('2d'), w = canvasEl.width, h = canvasEl.height;
+        ctx.imageSmoothingEnabled = false;
+        const grad = ctx.createLinearGradient(0, 0, 0, h);
+        if (theme === 'sunset_walk') { grad.addColorStop(0, '#2a2045'); grad.addColorStop(0.55, '#a84b5c'); grad.addColorStop(1, '#f0a66b'); }
+        else if (theme === 'warm_cafe') { grad.addColorStop(0, '#2b1e1a'); grad.addColorStop(1, '#5e3b2b'); }
+        else if (theme === 'flower_field') { grad.addColorStop(0, '#1f364d'); grad.addColorStop(0.6, '#486b7a'); grad.addColorStop(1, '#e8b69b'); }
+        else { grad.addColorStop(0, '#0a0f26'); grad.addColorStop(0.6, '#1a274d'); grad.addColorStop(1, '#263a66'); }
+        ctx.fillStyle = grad; ctx.fillRect(0, 0, w, h);
+
+        if (theme === 'sunset_walk') {
+          px(ctx, 102, 52, '#ffe099', 36, 36);
+          px(ctx, 0, 106, '#231b2e', w, 54);
+          px(ctx, 104, 86, '#140f1c', 8, 22); px(ctx, 120, 88, '#140f1c', 8, 20);
+          px(ctx, 105, 80, '#140f1c', 6, 6); px(ctx, 121, 82, '#140f1c', 6, 6);
+        } else if (theme === 'warm_cafe') {
+          px(ctx, 26, 22, '#24344f', 78, 66); px(ctx, 22, 18, '#3d251b', 86, 4);
+          px(ctx, 0, 114, '#7a4d34', w, 46);
+          px(ctx, 144, 92, '#f7ebd4', 28, 24); px(ctx, 172, 98, '#f7ebd4', 8, 12);
+          px(ctx, 152, 74, 'rgba(255,245,230,0.45)', 3, 14); px(ctx, 162, 68, 'rgba(255,245,230,0.45)', 3, 18);
+        } else if (theme === 'flower_field') {
+          px(ctx, 0, 102, '#284a3d', w, 58);
+          for (let i = 0; i < 42; i++) px(ctx, (i * 19) % w, 106 + ((i * 11) % 44), i % 2 === 0 ? '#f7b2c4' : '#ffe28a', 4, 4);
+          px(ctx, 108, 26, '#fff3cf', 24, 24);
+        } else {
+          for (let i = 0; i < 36; i++) px(ctx, (i * 29 + 11) % w, (i * 17 + 7) % 85, '#fff8dc', 2, 2);
+          px(ctx, 164, 24, '#fff1bd', 26, 26);
+          px(ctx, 0, 96, '#121d3d', w, 64);
+          for (let r = 0; r < 10; r++) px(ctx, 166 + (r % 3) * 2, 102 + r * 6, 'rgba(255,241,189,0.55)', 22 - r, 2);
+        }
+      }
+
+      return { createHeroTexture, createEnvironmentTextures, drawMemoryPolaroidFallback };
+    })();
+
+    /* =========================================================================
+     * 5. UI MANAGER
+     * ========================================================================= */
+    window.JourneyGame.UI = (function () {
+      const el = {};
+      let typingTimer = null, fullLineText = '', isTyping = false;
+      let dialogueQueue = [], dialogueCallback = null, actionCallback = null;
+      const joystickState = { x: 0, active: false };
+
+      function cacheElements() {
+        [
+          'app','top-hud','chapter-badge','location-label','btn-mute','mute-icon',
+          'volume-slider','btn-fullscreen','btn-restart-hud','rotate-hint','btn-dismiss-rotate',
+          'opening-overlay','btn-start','btn-continue','btn-restart-opening','save-info-text',
+          'chapter-toast','chapter-toast-num','chapter-toast-title',
+          'dialogue-box','dialogue-speaker','dialogue-text','btn-dialogue-next',
+          'interact-prompt','interact-prompt-label',
+          'touch-deck','joystick-zone','joystick-base','joystick-knob',
+          'btn-touch-action','touch-action-label',
+          'memory-modal','memory-photo','memory-fallback-canvas','memory-tag',
+          'memory-title','memory-short','memory-story','memory-meaning','btn-close-memory',
+          'ending-overlay','envelope-stage','envelope-wrapper','letter-stage',
+          'letter-content','letter-controls','btn-finish-letter','final-end-stage',
+          'btn-reread-letter','btn-replay-journey',
+          'confirm-modal','btn-cancel-restart','btn-confirm-restart'
+        ].forEach(id => { el[id] = document.getElementById(id); });
+      }
+
+      function init() {
+        cacheElements();
+        const audioState = window.JourneyGame.AudioEngine.getState();
+        el['volume-slider'].value = Math.round(audioState.volume * 100);
+        el['mute-icon'].textContent = audioState.muted ? '🔇' : '🔊';
+
+        el['volume-slider'].addEventListener('input', (e) => {
+          window.JourneyGame.AudioEngine.setVolume(Number(e.target.value) / 100);
+        });
+        el['btn-mute'].addEventListener('click', () => {
+          el['mute-icon'].textContent = window.JourneyGame.AudioEngine.toggleMute() ? '🔇' : '🔊';
+        });
+
+        // Tombol Fullscreen Native (Laptop / PC / Android)
+        const canFS = Boolean(document.documentElement.requestFullscreen || document.documentElement.webkitRequestFullscreen);
+        if (!canFS) {
+          el['btn-fullscreen'].classList.add('hidden');
+        } else {
+          el['btn-fullscreen'].addEventListener('click', () => {
+            try {
+              const fsEl = document.fullscreenElement || document.webkitFullscreenElement;
+              if (!fsEl) {
+                if (document.documentElement.requestFullscreen) document.documentElement.requestFullscreen();
+                else if (document.documentElement.webkitRequestFullscreen) document.documentElement.webkitRequestFullscreen();
+              } else {
+                if (document.exitFullscreen) document.exitFullscreen();
+                else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+              }
+            } catch (e) {}
+          });
+        }
+
+        el['btn-dismiss-rotate'].addEventListener('click', () => {
+          el['rotate-hint'].classList.add('hidden');
+          sessionStorage.setItem('rotate_hint_dismissed', '1');
+        });
+
+        const advanceFn = (e) => { if (e) e.stopPropagation(); advanceDialogue(); };
+        el['dialogue-box'].addEventListener('click', advanceFn);
+        el['btn-dialogue-next'].addEventListener('click', advanceFn);
+
+        el['btn-touch-action'].addEventListener('click', () => {
+          if (!el['dialogue-box'].classList.contains('hidden')) advanceDialogue();
+          else if (actionCallback) actionCallback();
+        });
+        el['interact-prompt'].addEventListener('click', () => { if (actionCallback) actionCallback(); });
+
+        el['btn-restart-hud'].addEventListener('click', () => el['confirm-modal'].classList.remove('hidden'));
+        el['btn-cancel-restart'].addEventListener('click', () => el['confirm-modal'].classList.add('hidden'));
+        el['btn-confirm-restart'].addEventListener('click', () => {
+          el['confirm-modal'].classList.add('hidden');
+          window.JourneyGame.restartGame();
+        });
+
+        setupVirtualJoystick();
+        checkTouchAndOrientation();
+        window.addEventListener('resize', checkTouchAndOrientation);
+        window.addEventListener('orientationchange', checkTouchAndOrientation);
+      }
+
+      function checkTouchAndOrientation() {
+        const isTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0 || window.innerWidth <= 900;
+        const isInGame = el['app'].classList.contains('in-game');
+        const isPortrait = window.innerHeight > window.innerWidth;
+
+        document.body.classList.toggle('has-touch', isInGame && isTouch);
+        el['touch-deck'].classList.toggle('hidden', !(isInGame && isTouch));
+
+        const dismissed = sessionStorage.getItem('rotate_hint_dismissed') === '1';
+        el['rotate-hint'].classList.toggle('hidden', !(isInGame && isTouch && isPortrait && !dismissed));
+      }
+
+      function setupVirtualJoystick() {
+        const zone = el['joystick-zone'], knob = el['joystick-knob'];
+        let activePointerId = null, centerX = 0;
+        const maxRadius = 28;
+
+        function updateKnob(clientX) {
+          const dx = Math.max(-maxRadius, Math.min(maxRadius, clientX - centerX));
+          knob.style.transform = `translate(${dx}px, 0px)`;
+          joystickState.x = Math.abs(dx / maxRadius) < 0.16 ? 0 : dx / maxRadius;
+        }
+
+        zone.addEventListener('pointerdown', (e) => {
+          e.preventDefault();
+          activePointerId = e.pointerId;
+          if (zone.setPointerCapture) zone.setPointerCapture(e.pointerId);
+          const rect = el['joystick-base'].getBoundingClientRect();
+          centerX = rect.left + rect.width / 2;
+          joystickState.active = true;
+          updateKnob(e.clientX);
+        });
+        zone.addEventListener('pointermove', (e) => { if (e.pointerId === activePointerId) updateKnob(e.clientX); });
+        const reset = (e) => {
+          if (e.pointerId !== activePointerId) return;
+          activePointerId = null; joystickState.active = false; joystickState.x = 0;
+          knob.style.transform = 'translate(0px, 0px)';
+        };
+        zone.addEventListener('pointerup', reset);
+        zone.addEventListener('pointercancel', reset);
+      }
+
+      function showOpening(saveData, handlers) {
+        el['app'].classList.remove('in-game');
+        el['top-hud'].classList.add('hidden');
+        el['ending-overlay'].classList.add('hidden');
+        el['opening-overlay'].classList.remove('hidden');
+
+        if (saveData) {
+          el['btn-continue'].classList.remove('hidden');
+          el['btn-restart-opening'].classList.remove('hidden');
+          el['btn-start'].classList.add('hidden');
+          el['save-info-text'].textContent = `Checkpoint tersimpan: Chapter ${saveData.chapter}`;
+          el['save-info-text'].classList.remove('hidden');
+        } else {
+          el['btn-continue'].classList.add('hidden');
+          el['btn-restart-opening'].classList.add('hidden');
+          el['btn-start'].classList.remove('hidden');
+          el['save-info-text'].classList.add('hidden');
+        }
+
+        el['btn-start'].onclick = handlers.onStartNew;
+        el['btn-continue'].onclick = handlers.onContinue;
+        el['btn-restart-opening'].onclick = handlers.onStartNew;
+        checkTouchAndOrientation();
+      }
+
+      function enterGameMode() {
+        el['opening-overlay'].classList.add('hidden');
+        el['ending-overlay'].classList.add('hidden');
+        el['app'].classList.add('in-game');
+        el['top-hud'].classList.remove('hidden');
+        checkTouchAndOrientation();
+      }
+
+      function updateChapterHUD(chapterObj) {
+        el['chapter-badge'].textContent = chapterObj.num;
+        el['location-label'].textContent = chapterObj.locationName;
+      }
+
+      function showChapterToast(chapterObj) {
+        el['chapter-toast-num'].textContent = chapterObj.num;
+        el['chapter-toast-title'].textContent = chapterObj.title;
+        el['chapter-toast'].classList.remove('hidden');
+        el['chapter-toast'].style.animation = 'none';
+        void el['chapter-toast'].offsetWidth;
+        el['chapter-toast'].style.animation = '';
+        setTimeout(() => el['chapter-toast'].classList.add('hidden'), 3900);
+      }
+
+      function startDialogue(lines, onComplete) {
+        dialogueQueue = lines.slice();
+        dialogueCallback = onComplete || null;
+        el['dialogue-box'].classList.remove('hidden');
+        el['btn-touch-action'].disabled = false;
+        el['btn-touch-action'].classList.add('active-glow');
+        el['touch-action-label'].textContent = 'LANJUT';
+        showNextDialogueLine();
+      }
+
+      function showNextDialogueLine() {
+        if (dialogueQueue.length === 0) { closeDialogue(); return; }
+        const item = dialogueQueue.shift();
+        el['dialogue-speaker'].textContent = item.speaker || 'Ciell';
+        fullLineText = item.text;
+        el['dialogue-text'].textContent = '';
+        isTyping = true;
+
+        let idx = 0;
+        clearInterval(typingTimer);
+        typingTimer = setInterval(() => {
+          idx++;
+          el['dialogue-text'].textContent = fullLineText.slice(0, idx);
+          if (idx >= fullLineText.length) { clearInterval(typingTimer); isTyping = false; }
+        }, 22);
+      }
+
+      function advanceDialogue() {
+        if (el['dialogue-box'].classList.contains('hidden')) return;
+        if (isTyping) {
+          clearInterval(typingTimer);
+          el['dialogue-text'].textContent = fullLineText;
+          isTyping = false;
+          return;
+        }
+        showNextDialogueLine();
+      }
+
+      function closeDialogue() {
+        clearInterval(typingTimer);
+        isTyping = false;
+        el['dialogue-box'].classList.add('hidden');
+        el['btn-touch-action'].classList.remove('active-glow');
+        if (!actionCallback) {
+          el['btn-touch-action'].disabled = true;
+          el['touch-action-label'].textContent = 'PERIKSA';
+        }
+        const cb = dialogueCallback;
+        dialogueCallback = null;
+        if (cb) cb();
+      }
+
+      function isDialogueOpen() { return !el['dialogue-box'].classList.contains('hidden'); }
+
+      function setInteractPrompt(visible, labelText, onInteract) {
+        actionCallback = visible ? onInteract : null;
+        if (visible) {
+          el['interact-prompt-label'].textContent = labelText;
+          el['interact-prompt'].classList.remove('hidden');
+          if (!isDialogueOpen()) {
+            el['btn-touch-action'].disabled = false;
+            el['btn-touch-action'].classList.add('active-glow');
+            el['touch-action-label'].textContent = 'PERIKSA';
+          }
+        } else {
+          el['interact-prompt'].classList.add('hidden');
+          if (!isDialogueOpen()) {
+            el['btn-touch-action'].disabled = true;
+            el['btn-touch-action'].classList.remove('active-glow');
+          }
+        }
+      }
+
+      function openMemoryModal(memory, onClose) {
+        window.JourneyGame.AudioEngine.playChime();
+        el['memory-tag'].textContent = memory.tag;
+        el['memory-title'].textContent = memory.title;
+        el['memory-short'].textContent = memory.shortMessage;
+        el['memory-story'].textContent = memory.story;
+        el['memory-meaning'].textContent = memory.meaningNote;
+
+        const img = el['memory-photo'], canvas = el['memory-fallback-canvas'];
+        img.classList.add('hidden'); canvas.classList.remove('hidden');
+        window.JourneyGame.AssetFactory.drawMemoryPolaroidFallback(canvas, memory.fallbackTheme);
+
+        if (memory.photoSrc) {
+          img.onload = () => { img.classList.remove('hidden'); canvas.classList.add('hidden'); };
+          img.onerror = () => { img.classList.add('hidden'); canvas.classList.remove('hidden'); };
+          img.src = memory.photoSrc;
+        }
+
+        el['memory-modal'].classList.remove('hidden');
+        el['btn-close-memory'].onclick = () => {
+          el['memory-modal'].classList.add('hidden');
+          if (onClose) onClose();
+        };
+      }
+
+      function playEndingSequence(paragraphs, handlers) {
+        el['top-hud'].classList.remove('hidden');
+        el['touch-deck'].classList.add('hidden');
+        el['interact-prompt'].classList.add('hidden');
+        el['dialogue-box'].classList.add('hidden');
+        document.body.classList.remove('has-touch');
+
+        el['ending-overlay'].classList.remove('hidden');
+        el['envelope-stage'].classList.remove('hidden');
+        el['letter-stage'].classList.add('hidden');
+        el['final-end-stage'].classList.add('hidden');
+        el['envelope-wrapper'].classList.remove('open');
+
+        setTimeout(() => {
+          el['envelope-wrapper'].classList.add('open');
+          window.JourneyGame.AudioEngine.playChime();
+        }, 900);
+
+        setTimeout(() => showLetterLines(paragraphs, handlers), 2800);
+      }
+
+      function showLetterLines(paragraphs, handlers) {
+        el['envelope-stage'].classList.add('hidden');
+        el['letter-stage'].classList.remove('hidden');
+        el['final-end-stage'].classList.add('hidden');
+        el['letter-controls'].classList.add('hidden');
+        el['letter-content'].innerHTML = '';
+
+        let i = 0;
+        function revealNext() {
+          if (i >= paragraphs.length) { el['letter-controls'].classList.remove('hidden'); return; }
+          const p = document.createElement('p');
+          p.className = 'letter-paragraph';
+          p.textContent = paragraphs[i];
+          el['letter-content'].appendChild(p);
+          el['letter-stage'].querySelector('.letter-paper').scrollTop = 9999;
+          i++;
+          setTimeout(revealNext, 1300);
+        }
+        revealNext();
+
+        el['btn-finish-letter'].onclick = () => {
+          el['letter-stage'].classList.add('hidden');
+          el['final-end-stage'].classList.remove('hidden');
+        };
+        el['btn-reread-letter'].onclick = () => showLetterLines(paragraphs, handlers);
+        el['btn-replay-journey'].onclick = () => {
+          el['ending-overlay'].classList.add('hidden');
+          handlers.onReplay();
+        };
+      }
+
+      return {
+        init, showOpening, enterGameMode, updateChapterHUD, showChapterToast,
+        startDialogue, advanceDialogue, isDialogueOpen, setInteractPrompt,
+        openMemoryModal, playEndingSequence, getJoystickX: () => joystickState.x
+      };
+    })();
+
+    /* =========================================================================
+     * 6. PHASER SCENES (FULLSCREEN RESPONSIVE)
+     * ========================================================================= */
+    class BootScene extends Phaser.Scene {
+      constructor() { super('BootScene'); }
+      create() {
+        window.JourneyGame.AssetFactory.createHeroTexture(this);
+        window.JourneyGame.AssetFactory.createEnvironmentTextures(this);
+        this.scene.start('OpeningScene');
+      }
+    }
+
+    class OpeningScene extends Phaser.Scene {
+      constructor() { super('OpeningScene'); }
+      create() {
+        const cam = this.cameras.main;
+        cam.setBackgroundColor('#050710');
+
+        // Langit & Tanah ekstra luas agar full-screen di semua rasio layar (HP portrait sampai ultrawide)
+        const skyOverlay = this.add.rectangle(240, 140, 2400, 1400, 0x050710).setDepth(50);
+        const skyGfx = this.add.graphics();
+        skyGfx.fillGradientStyle(0x060916, 0x060916, 0x162040, 0x162040, 1);
+        skyGfx.fillRect(-700, -500, 1900, 820);
+
+        this.add.circle(345, 62, 12, 0xfcf2cf, 0.9);
+        this.add.circle(350, 59, 11, 0x0a1026, 1);
+
+        for (let i = 0; i < 90; i++) {
+          const star = this.add.rectangle(
+            Phaser.Math.Between(-300, 780),
+            Phaser.Math.Between(-160, 155),
+            i % 5 === 0 ? 2 : 1,
+            i % 5 === 0 ? 2 : 1,
+            0xfff8de,
+            0
+          );
+          this.time.delayedCall(180 + (i % 40) * 55, () => {
+            if (!star.scene) return;
+            this.tweens.add({
+              targets: star, alpha: Phaser.Math.FloatBetween(0.45, 0.95), duration: 600,
+              onComplete: () => {
+                if (!star.scene) return;
+                this.tweens.add({ targets: star, alpha: 0.25, duration: Phaser.Math.Between(1400, 2800), yoyo: true, repeat: -1 });
+              }
+            });
+          });
+        }
+
+        this.add.tileSprite(240, 165, 2200, 110, 'mtn_far').setTint(0x1f2847);
+        this.add.tileSprite(240, 195, 2200, 80, 'hills_mid').setTint(0x151e36);
+
+        [-60, 18, 58, 92, 360, 412, 495, 560].forEach((tx, idx) => {
+          const tree = this.add.image(tx, 212, 'pine_tree').setOrigin(0.5, 1).setTint(0x162936);
+          this.tweens.add({ targets: tree, angle: idx % 2 === 0 ? 1.5 : -1.5, duration: 2400 + idx * 250, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
+        });
+
+        this.add.rectangle(240, 420, 2400, 420, 0x101829);
+        this.add.rectangle(240, 224, 2400, 8, 0x2a2429);
+
+        for (let gx = -260; gx < 760; gx += 18) {
+          const tuft = this.add.sprite(gx, 218, 'grass_tuft').setOrigin(0.5, 1).setTint(0x527a82);
+          tuft.play({ key: 'grass_sway', startFrame: Math.abs(gx) % 3 });
+        }
+
+        const hero = this.add.sprite(240, 217, 'hero', 0).setOrigin(0.5, 1);
+        hero.play('hero_look');
+
+        for (let f = 0; f < 10; f++) {
+          const ff = this.add.image(Phaser.Math.Between(60, 420), Phaser.Math.Between(160, 218), 'firefly').setAlpha(0.3);
+          this.tweens.add({
+            targets: ff, x: ff.x + Phaser.Math.Between(-22, 22), y: ff.y + Phaser.Math.Between(-10, 10),
+            alpha: 0.85, duration: Phaser.Math.Between(2000, 3600), yoyo: true, repeat: -1, ease: 'Sine.easeInOut'
+          });
+        }
+
+        this.tweens.add({ targets: skyOverlay, alpha: 0, duration: 2200, ease: 'Sine.easeInOut', onComplete: () => skyOverlay.destroy() });
+
+        this.zoomMult = 0.92;
+        const applyCam = () => {
+          const w = this.scale.width, h = this.scale.height;
+          const bz = computeBaseZoom(w, h);
+          cam.setZoom(bz * this.zoomMult);
+          cam.centerOn(240, h > w ? 130 : 148);
+        };
+        applyCam();
+
+        this.tweens.add({
+          targets: this,
+          zoomMult: 1.12,
+          duration: 5000,
+          ease: 'Sine.easeInOut',
+          onUpdate: applyCam
+        });
+
+        this.onResizeHandler = () => applyCam();
+        this.scale.on('resize', this.onResizeHandler);
+        this.events.once('shutdown', () => this.scale.off('resize', this.onResizeHandler));
+
+        const saveData = window.JourneyGame.SaveSystem.loadProgress();
+        this.time.delayedCall(2500, () => {
+          if (!this.scene.isActive()) return;
+          window.JourneyGame.UI.showOpening(saveData, {
+            onStartNew: () => {
+              window.JourneyGame.SaveSystem.clearProgress();
+              this.beginJourney(null);
+            },
+            onContinue: () => this.beginJourney(saveData)
+          });
+        });
+      }
+
+      beginJourney(saveData) {
+        window.JourneyGame.AudioEngine.init();
+        window.JourneyGame.AudioEngine.startMusic(saveData ? saveData.chapter : 1);
+        this.cameras.main.fadeOut(900, 5, 7, 16);
+        this.cameras.main.once('camerafadeoutcomplete', () => {
+          window.JourneyGame.UI.enterGameMode();
+          this.scene.start('GameScene', { saveData });
+        });
+      }
+    }
+
+    class GameScene extends Phaser.Scene {
+      constructor() { super('GameScene'); }
+      init(data) { this.saveData = data && data.saveData ? data.saveData : null; }
+
+      create() {
+        const STORY = window.JourneyGame.STORY, UI = window.JourneyGame.UI, Audio = window.JourneyGame.AudioEngine;
+        this.worldWidth = STORY.worldWidth; this.groundY = STORY.groundY;
+        this.isTransitioning = false; this.isModalOpen = false; this.stepTimer = 0;
+        this.chapterZoomMult = 1.0;
+
+        this.triggeredBeats = new Set(this.saveData ? this.saveData.triggeredBeats : []);
+        this.visitedMemories = new Set(this.saveData ? this.saveData.visitedMemories : []);
+        this.currentChapter = this.saveData ? this.saveData.chapter : 1;
+
+        const w = this.scale.width, h = this.scale.height;
+
+        // 100x100 sky rect scaled every frame to cover 100% of any viewport & zoom
+        this.skyRect = this.add.rectangle(w / 2, h / 2, 100, 100, 0x0f162c).setScrollFactor(0).setDepth(-30);
+
+        // Sun & Moon anchored relative to world Y via scrollFactor(0, 1)
+        this.sunGlow = this.add.circle(w / 2 + 120, 155, 34, 0xffc67a, 0).setDepth(-28).setScrollFactor(0, 1);
+        this.sunDisc = this.add.circle(w / 2 + 120, 155, 18, 0xffe4a3, 0).setDepth(-27).setScrollFactor(0, 1);
+
+        this.moonGlow = this.add.circle(661, 78, 26, 0xdfeaff, 0.16).setDepth(-28).setScrollFactor(0.14, 1);
+        this.moonDisc = this.add.circle(661, 78, 13, 0xfcf4d9, 0.95).setDepth(-27).setScrollFactor(0.14, 1);
+
+        // Stars spanning wide sky above mountains
+        this.starsGroup = [];
+        for (let i = 0; i < 110; i++) {
+          const offsetX = Phaser.Math.Between(-560, 560);
+          const worldY = Phaser.Math.Between(-210, 168);
+          const s = this.add.rectangle(w / 2 + offsetX, worldY, i % 4 === 0 ? 2 : 1, i % 4 === 0 ? 2 : 1, 0xfff9e2, 0.7)
+            .setScrollFactor(0, 1).setDepth(-29);
+          s.offsetX = offsetX;
+          this.starsGroup.push(s);
+        }
+
+        for (let cx = 60; cx < this.worldWidth * 0.5; cx += 190) {
+          this.add.image(cx, Phaser.Math.Between(42, 115), 'cloud_pixel').setScrollFactor(0.22, 1).setDepth(-24).setAlpha(0.65);
+        }
+
+        this.farMountains = this.add.tileSprite(w / 2, 232, 2400, 110, 'mtn_far').setScrollFactor(0, 1).setDepth(-20);
+        this.midHills = this.add.tileSprite(w / 2, 256, 2400, 80, 'hills_mid').setScrollFactor(0, 1).setDepth(-15);
+
+        this.buildBiomes();
+
+        const startX = this.saveData ? this.saveData.playerX : 70;
+        this.player = this.add.sprite(startX, this.groundY, 'hero', 0).setOrigin(0.5, 1).setDepth(10);
+        this.player.play('hero_idle');
+        this.playerLight = this.add.circle(startX, this.groundY - 14, 28, 0xffdfb0, 0.08).setDepth(9);
+
+        this.buildParticles();
+
+        const cam = this.cameras.main;
+        cam.setBounds(0, -450, this.worldWidth, 1150);
+        this.updateCameraFraming(w, h, true);
+        cam.fadeIn(1000, 5, 7, 16);
+
+        this.onResizeHandler = (gameSize) => {
+          this.updateCameraFraming(gameSize.width, gameSize.height, false);
+        };
+        this.scale.on('resize', this.onResizeHandler);
+        this.events.once('shutdown', () => this.scale.off('resize', this.onResizeHandler));
+
+        this.cursors = this.input.keyboard.createCursorKeys();
+        this.keys = this.input.keyboard.addKeys({
+          left: Phaser.Input.Keyboard.KeyCodes.A,
+          right: Phaser.Input.Keyboard.KeyCodes.D
+        });
+        this.input.keyboard.on('keydown-SPACE', () => this.handleActionInput());
+        this.input.keyboard.on('keydown-ENTER', () => this.handleActionInput());
+        this.input.keyboard.on('keydown-E', () => this.handleActionInput());
+
+        const chObj = STORY.chapters.find(c => c.id === this.currentChapter) || STORY.chapters[0];
+        UI.updateChapterHUD(chObj);
+        UI.showChapterToast(chObj);
+        Audio.setChapter(this.currentChapter);
+        Audio.setMusicDuck(1.0);
+      }
+
+      updateCameraFraming(w, h, snapZoom) {
+        const cam = this.cameras.main;
+        const followYOffset = h > w ? 22 : 52;
+        cam.startFollow(this.player, true, 0.085, 0.085, 0, followYOffset);
+        if (snapZoom) {
+          cam.setZoom(computeBaseZoom(w, h) * this.chapterZoomMult);
+        }
+        this.farMountains.setX(w / 2);
+        this.midHills.setX(w / 2);
+        this.starsGroup.forEach(s => s.setX(w / 2 + s.offsetX));
+      }
+
+      buildBiomes() {
+        const STORY = window.JourneyGame.STORY, gY = this.groundY;
+
+        for (let x = 0; x < this.worldWidth; x += 240) {
+          let topColor = 0x284739, dirtColor = 0x161c26;
+          if (x >= 1120 && x < 2450) topColor = 0x1e3838;
+          else if (x >= 2450 && x < 4050) topColor = 0x1d2e45;
+          else if (x >= 4050 && x < 5350) topColor = 0x453a2e;
+          else if (x >= 5350) topColor = 0x264a3e;
+
+          // Tanah & air diperdalam hingga y=700 agar layar HP portrait penuh sempurna sampai bawah
+          if (x >= 1800 && x < 2040) {
+            this.add.rectangle(x + 120, gY + 190, 242, 380, 0x11253b).setDepth(2);
+          } else {
+            this.add.rectangle(x + 120, gY + 4, 242, 10, topColor).setDepth(3);
+            this.add.rectangle(x + 120, gY + 195, 242, 380, dirtColor).setDepth(2);
+          }
+        }
+
+        for (let gx = 30; gx < 1100; gx += 24) {
+          this.add.sprite(gx, gY, 'grass_tuft').setOrigin(0.5, 1).setDepth(5).play({ key: 'grass_sway', startFrame: gx % 3 });
+          if (gx % 72 === 0) this.add.sprite(gx + 10, gY, 'flower_tuft').setOrigin(0.5, 1).setDepth(5).play({ key: 'flower_sway', startFrame: gx % 3 });
+        }
+
+        for (let tx = 1160; tx < 2420; tx += 68) {
+          if (tx > 1790 && tx < 2110) continue;
+          const tree = this.add.image(tx, gY + 2, 'pine_tree').setOrigin(0.5, 1).setScale(Phaser.Math.FloatBetween(0.9, 1.35)).setDepth(tx % 136 === 0 ? 12 : 4);
+          this.tweens.add({ targets: tree, angle: 1.2, duration: 2800 + (tx % 500), yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
+        }
+
+        this.bridgeRange = { start: 1810, end: 2090 };
+        this.add.rectangle(1950, gY + 12, 290, 14, 0x163352).setDepth(2);
+        this.add.rectangle(1950, gY + 2, 280, 6, 0x70462e).setDepth(6);
+        for (let bx = 1825; bx <= 2075; bx += 36) {
+          this.add.rectangle(bx, gY + 14, 6, 26, 0x4d2f1e).setDepth(5);
+          this.add.rectangle(bx, gY - 8, 4, 18, 0x5c3925).setDepth(11);
+        }
+        this.add.rectangle(1950, gY - 15, 276, 3, 0x87563a).setDepth(11);
+
+        for (let rx = 1830; rx < 2070; rx += 22) {
+          this.add.rectangle(rx, gY + 14 + (rx % 3) * 4, 14, 2, 0x7ab8e6, 0.35).setDepth(4);
+        }
+
+        // Danau malam dalam sampai bawah layar
+        this.add.rectangle(3250, gY + 195, 1360, 380, 0x111f3d).setDepth(3);
+        for (let mr = 0; mr < 14; mr++) {
+          const mLine = this.add.rectangle(3250, gY + 10 + mr * 3, 46 - mr * 2.4, 1.5, 0xfcf2cf, 0.52 - mr * 0.03).setDepth(4);
+          this.tweens.add({ targets: mLine, x: mLine.x + (mr % 2 === 0 ? 6 : -6), alpha: 0.18, duration: 1600 + mr * 120, yoyo: true, repeat: -1 });
+        }
+
+        this.memorySprites = STORY.memories.map(mem => {
+          const sp = this.add.image(mem.x, gY, mem.spriteKey).setOrigin(0.5, 1).setDepth(7);
+          const glow = this.add.circle(mem.x, gY - 12, 14, 0xffdf8e, 0.16).setDepth(6);
+          this.tweens.add({ targets: glow, scale: 1.35, alpha: 0.32, duration: 1400, yoyo: true, repeat: -1 });
+          return { data: mem, sprite: sp, glow };
+        });
+
+        for (let gx = 4080; gx < 5320; gx += 20) {
+          this.add.sprite(gx, gY, 'grass_tuft').setOrigin(0.5, 1).setTint(0xd9965b).setDepth(5).play({ key: 'grass_sway', startFrame: gx % 3 });
+        }
+
+        for (let fx = 5380; fx < 6520; fx += 18) {
+          this.add.sprite(fx, gY, 'flower_tuft').setOrigin(0.5, 1).setDepth(6).play({ key: 'flower_sway', startFrame: fx % 3 });
+        }
+
+        this.add.image(6160, gY + 4, 'great_tree').setOrigin(0.5, 1).setDepth(5);
+        this.mailbox = this.add.sprite(STORY.mailboxX, gY + 1, 'mailbox', 0).setOrigin(0.5, 1).setDepth(8);
+        const mailboxGlow = this.add.circle(STORY.mailboxX, gY - 16, 16, 0xffe29a, 0.2).setDepth(7);
+        this.tweens.add({ targets: mailboxGlow, alpha: 0.42, scale: 1.25, duration: 1500, yoyo: true, repeat: -1 });
+      }
+
+      buildParticles() {
+        this.rainDrops = [];
+        for (let i = 0; i < 85; i++) {
+          const drop = this.add.image(0, 0, 'raindrop').setScrollFactor(0).setDepth(20).setAlpha(0);
+          drop.rx = Phaser.Math.FloatBetween(-1, 1);
+          drop.ry = Phaser.Math.FloatBetween(-1, 1);
+          this.rainDrops.push(drop);
+        }
+
+        this.mistBands = [];
+        for (let m = 0; m < 8; m++) {
+          this.mistBands.push(this.add.image(m * 110, 215 + (m % 2) * 14, 'mist_band').setScrollFactor(0.6, 1).setDepth(15).setAlpha(0));
+        }
+
+        for (let i = 0; i < 28; i++) {
+          const zoneX = i < 10 ? Phaser.Math.Between(1250, 2400) : i < 16 ? Phaser.Math.Between(2600, 3950) : Phaser.Math.Between(5450, 6460);
+          const ff = this.add.image(zoneX, Phaser.Math.Between(195, this.groundY - 8), 'firefly').setDepth(14).setAlpha(0.35);
+          this.tweens.add({
+            targets: ff, x: ff.x + Phaser.Math.Between(-24, 24), y: ff.y + Phaser.Math.Between(-14, 14),
+            alpha: 0.92, duration: Phaser.Math.Between(1800, 3200), yoyo: true, repeat: -1, ease: 'Sine.easeInOut'
+          });
+        }
+
+        this.petals = [];
+        for (let p = 0; p < 18; p++) {
+          this.petals.push({
+            sprite: this.add.image(Phaser.Math.Between(5400, 6500), Phaser.Math.Between(120, this.groundY - 10), 'petal').setDepth(14).setAlpha(0.8),
+            vx: Phaser.Math.FloatBetween(-16, -8),
+            vy: Phaser.Math.FloatBetween(6, 13)
+          });
+        }
+      }
+
+      handleActionInput() {
+        const UI = window.JourneyGame.UI;
+        if (this.isTransitioning || this.isModalOpen) return;
+        if (UI.isDialogueOpen()) { UI.advanceDialogue(); return; }
+        if (this.activeInteractable) this.activeInteractable.onInteract();
+      }
+
+      triggerDialogueBeat(beat) {
+        if (this.triggeredBeats.has(beat.id)) return;
+        this.triggeredBeats.add(beat.id);
+        this.saveState();
+        this.player.play('hero_idle', true);
+        window.JourneyGame.UI.startDialogue(beat.lines);
+      }
+
+      saveState() {
+        window.JourneyGame.SaveSystem.saveProgress({
+          chapter: this.currentChapter,
+          playerX: this.player.x,
+          triggeredBeats: Array.from(this.triggeredBeats),
+          visitedMemories: Array.from(this.visitedMemories)
+        });
+      }
+
+      update(time, delta) {
+        if (this.isTransitioning) return;
+
+        const dt = delta / 1000;
+        const STORY = window.JourneyGame.STORY, UI = window.JourneyGame.UI, Audio = window.JourneyGame.AudioEngine;
+        const cam = this.cameras.main;
+
+        let moveX = 0;
+        if (!UI.isDialogueOpen() && !this.isModalOpen) {
+          if (this.cursors.left.isDown || this.keys.left.isDown) moveX = -1;
+          else if (this.cursors.right.isDown || this.keys.right.isDown) moveX = 1;
+          else {
+            const joyX = UI.getJoystickX();
+            if (Math.abs(joyX) > 0.15) moveX = joyX;
+          }
+        }
+
+        if (Math.abs(moveX) > 0.05) {
+          const nextX = Phaser.Math.Clamp(this.player.x + moveX * 96 * dt, 36, STORY.mailboxX - 24);
+          this.player.x = nextX;
+          this.player.setFlipX(moveX < 0);
+          this.player.play('hero_walk', true);
+
+          this.stepTimer += dt;
+          if (this.stepTimer > 0.34) {
+            this.stepTimer = 0;
+            const onBridge = this.player.x >= this.bridgeRange.start && this.player.x <= this.bridgeRange.end;
+            Audio.playFootstep(onBridge ? 'wood' : 'grass');
+          }
+        } else {
+          this.player.play('hero_idle', true);
+        }
+
+        this.playerLight.setPosition(this.player.x, this.player.y - 14);
+
+        let detectedChapter = 1;
+        for (let i = STORY.chapters.length - 1; i >= 0; i--) {
+          if (this.player.x >= STORY.chapters[i].startX) { detectedChapter = STORY.chapters[i].id; break; }
+        }
+
+        if (detectedChapter !== this.currentChapter) {
+          this.currentChapter = detectedChapter;
+          const chObj = STORY.chapters.find(c => c.id === detectedChapter);
+          UI.updateChapterHUD(chObj);
+          UI.showChapterToast(chObj);
+          Audio.setChapter(detectedChapter);
+          this.saveState();
+        }
+
+        if (!UI.isDialogueOpen() && !this.isModalOpen) {
+          for (const beat of STORY.beats) {
+            if (!this.triggeredBeats.has(beat.id) && this.player.x >= beat.triggerX) {
+              this.triggerDialogueBeat(beat);
+              break;
+            }
+          }
+        }
+
+        this.activeInteractable = null;
+        if (!UI.isDialogueOpen() && !this.isModalOpen) {
+          for (const memObj of this.memorySprites) {
+            if (Math.abs(this.player.x - memObj.data.x) < 34) {
+              this.activeInteractable = {
+                label: '[E / TAP] Periksa Kenangan',
+                onInteract: () => {
+                  this.isModalOpen = true;
+                  this.visitedMemories.add(memObj.data.id);
+                  this.saveState();
+                  UI.openMemoryModal(memObj.data, () => { this.isModalOpen = false; });
+                }
+              };
+              break;
+            }
+          }
+
+          if (!this.activeInteractable && Math.abs(this.player.x - STORY.mailboxX) < 42) {
+            this.activeInteractable = {
+              label: '[E / TAP] Letakkan Surat untuk Maya',
+              onInteract: () => this.startEndingTransition()
+            };
+          }
+        }
+
+        if (this.activeInteractable) UI.setInteractPrompt(true, this.activeInteractable.label, this.activeInteractable.onInteract);
+        else UI.setInteractPrompt(false);
+
+        this.updateAtmosphereAndCamera(dt, cam, Audio);
+      }
+
+      updateAtmosphereAndCamera(dt, cam, Audio) {
+        const px = this.player.x;
+        const w = this.scale.width, h = this.scale.height;
+        const baseZoom = computeBaseZoom(w, h);
+        let skyColor = 0x162244, sunAlpha = 0, starAlpha = 0.85, rainIntensity = 0, windIntensity = 0.25, targetZoomMult = 1.0;
+
+        if (px < 1120) {
+          const t = Phaser.Math.Clamp((px - 220) / 780, 0, 1);
+          const c = Phaser.Display.Color.Interpolate.ColorWithColor(
+            Phaser.Display.Color.ValueToColor(0x0c132b),
+            Phaser.Display.Color.ValueToColor(0x63577a),
+            100,
+            Math.round(t * 100)
+          );
+          skyColor = Phaser.Display.Color.GetColor(c.r, c.g, c.b);
+          sunAlpha = t;
+          starAlpha = 1 - t * 0.7;
+          this.sunDisc.setPosition(w / 2 + 100, 150 - t * 42);
+          this.sunGlow.setPosition(w / 2 + 100, 150 - t * 42);
+        } else if (px < 2450) {
+          skyColor = 0x1a2636; starAlpha = 0.08; rainIntensity = 1.0; windIntensity = 0.55;
+        } else if (px < 4050) {
+          skyColor = 0x0d152e; starAlpha = 0.92; windIntensity = 0.2;
+        } else if (px < 5350) {
+          skyColor = 0x733a50; sunAlpha = 0.95; starAlpha = 0.25; windIntensity = 0.45; targetZoomMult = 0.78;
+          this.sunDisc.setPosition(w / 2 + 90, 128);
+          this.sunGlow.setPosition(w / 2 + 90, 128);
+        } else {
+          skyColor = 0x090f24; starAlpha = 1.0; windIntensity = 0.3; targetZoomMult = 1.06;
+        }
+
+        this.chapterZoomMult = Phaser.Math.Linear(this.chapterZoomMult, targetZoomMult, dt * 1.6);
+        cam.zoom = baseZoom * this.chapterZoomMult;
+
+        // Sky rect selalu menutupi penuh 100% layar di zoom & resolusi apa pun
+        this.skyRect.setFillStyle(skyColor);
+        this.skyRect.setPosition(w / 2, h / 2);
+        this.skyRect.setScale((w / cam.zoom + 80) / 100, (h / cam.zoom + 80) / 100);
+
+        if (px > 5850) {
+          Audio.setMusicDuck(Phaser.Math.Clamp((window.JourneyGame.STORY.mailboxX - px) / 420, 0.28, 1));
+        } else {
+          Audio.setMusicDuck(1.0);
+        }
+
+        this.sunDisc.setAlpha(sunAlpha * 0.9);
+        this.sunGlow.setAlpha(sunAlpha * 0.28);
+        this.moonDisc.setAlpha(px > 2100 && px < 4200 ? 0.92 : 0.35);
+        this.moonGlow.setAlpha(px > 2100 && px < 4200 ? 0.2 : 0.05);
+
+        this.starsGroup.forEach((s, i) => {
+          s.setAlpha(starAlpha * (0.45 + 0.5 * Math.sin(this.time.now * 0.002 + i)));
+        });
+
+        this.farMountains.tilePositionX = cam.scrollX * 0.22;
+        this.midHills.tilePositionX = cam.scrollX * 0.48;
+
+        // Rain mencakup 100% viewport saat aktif
+        Audio.setAmbience(rainIntensity, windIntensity);
+        const halfVisW = (w / 2) / cam.zoom + 24;
+        const halfVisH = (h / 2) / cam.zoom + 24;
+        this.rainDrops.forEach(drop => {
+          drop.setAlpha(rainIntensity * 0.72);
+          if (rainIntensity > 0.05) {
+            drop.rx -= (45 * dt) / halfVisW;
+            drop.ry += (280 * dt) / halfVisH;
+            if (drop.ry > 1) {
+              drop.ry = -1;
+              drop.rx = Phaser.Math.FloatBetween(-1, 1.2);
+            }
+            drop.setPosition(w / 2 + drop.rx * halfVisW, h / 2 + drop.ry * halfVisH);
+          }
+        });
+
+        this.mistBands.forEach((mb, idx) => {
+          mb.setAlpha(rainIntensity * 0.55);
+          mb.x += (idx % 2 === 0 ? 10 : -8) * dt;
+        });
+
+        this.petals.forEach(pt => {
+          pt.sprite.x += pt.vx * dt; pt.sprite.y += pt.vy * dt;
+          if (pt.sprite.y > this.groundY + 6 || pt.sprite.x < 5350) {
+            pt.sprite.x = Phaser.Math.Between(5500, 6500);
+            pt.sprite.y = 120;
+          }
+        });
+      }
+
+      startEndingTransition() {
+        this.isTransitioning = true;
+        window.JourneyGame.UI.setInteractPrompt(false);
+        window.JourneyGame.AudioEngine.setAmbience(0, 0.15);
+        window.JourneyGame.AudioEngine.setMusicDuck(0.35);
+
+        this.cameras.main.fadeOut(1100, 5, 7, 16);
+        this.cameras.main.once('camerafadeoutcomplete', () => {
+          this.scene.start('EndingScene');
+        });
+      }
+    }
+
+    class EndingScene extends Phaser.Scene {
+      constructor() { super('EndingScene'); }
+      create() {
+        const cam = this.cameras.main;
+        cam.setBackgroundColor('#050816');
+
+        const sky = this.add.graphics();
+        sky.fillGradientStyle(0x050816, 0x050816, 0x162246, 0x162246, 1);
+        sky.fillRect(-700, -500, 1900, 800);
+
+        for (let i = 0; i < 110; i++) {
+          const star = this.add.rectangle(Phaser.Math.Between(-300, 800), Phaser.Math.Between(-180, 165), i % 6 === 0 ? 2 : 1, i % 6 === 0 ? 2 : 1, 0xfff8dc, Phaser.Math.FloatBetween(0.35, 0.95));
+          this.tweens.add({ targets: star, alpha: 0.2, duration: Phaser.Math.Between(1400, 2600), yoyo: true, repeat: -1 });
+        }
+
+        this.add.rectangle(240, 415, 2400, 400, 0x162624);
+        this.add.rectangle(240, 215, 2400, 8, 0x264a3e);
+        this.add.image(168, 218, 'great_tree').setOrigin(0.5, 1);
+        this.mailbox = this.add.sprite(285, 216, 'mailbox', 0).setOrigin(0.5, 1);
+        this.add.circle(285, 198, 18, 0xffe49c, 0.24);
+
+        for (let fx = -240; fx < 740; fx += 20) {
+          this.add.sprite(fx, 215, 'flower_tuft').setOrigin(0.5, 1).play({ key: 'flower_sway', startFrame: Math.abs(fx) % 3 });
+        }
+
+        for (let i = 0; i < 18; i++) {
+          const ff = this.add.image(Phaser.Math.Between(60, 420), Phaser.Math.Between(140, 212), 'firefly').setAlpha(0.4);
+          this.tweens.add({
+            targets: ff, x: ff.x + Phaser.Math.Between(-20, 20), y: ff.y + Phaser.Math.Between(-12, 12),
+            alpha: 0.95, duration: Phaser.Math.Between(1800, 3200), yoyo: true, repeat: -1
+          });
+        }
+
+        this.petals = [];
+        for (let p = 0; p < 28; p++) {
+          this.petals.push({
+            sprite: this.add.image(Phaser.Math.Between(-80, 560), Phaser.Math.Between(-80, 260), 'petal').setDepth(20),
+            vx: Phaser.Math.FloatBetween(-26, -12),
+            vy: Phaser.Math.FloatBetween(12, 22)
+          });
+        }
+
+        this.hero = this.add.sprite(224, 215, 'hero', 0).setOrigin(0.5, 1);
+        this.hero.play('hero_walk');
+
+        this.zoomMult = 1.0;
+        this.focusX = 240;
+        this.focusY = 175;
+        const applyCam = () => {
+          const bz = computeBaseZoom(this.scale.width, this.scale.height);
+          cam.setZoom(bz * this.zoomMult);
+          cam.centerOn(this.focusX, this.focusY);
+        };
+        applyCam();
+
+        this.onResizeHandler = () => applyCam();
+        this.scale.on('resize', this.onResizeHandler);
+        this.events.once('shutdown', () => this.scale.off('resize', this.onResizeHandler));
+
+        cam.fadeIn(1000, 5, 7, 16);
+
+        this.tweens.add({
+          targets: this.hero, x: 256, duration: 1600, ease: 'Sine.easeOut',
+          onComplete: () => {
+            this.hero.play('hero_letter');
+            this.time.delayedCall(900, () => {
+              this.mailbox.setFrame(1);
+              window.JourneyGame.AudioEngine.playChime();
+              this.hero.play('hero_idle');
+
+              this.tweens.add({
+                targets: this,
+                zoomMult: 1.5,
+                focusX: 280,
+                focusY: 194,
+                duration: 2400,
+                ease: 'Sine.easeInOut',
+                onUpdate: applyCam,
+                onComplete: () => {
+                  window.JourneyGame.AudioEngine.setChapter(6);
+                  window.JourneyGame.AudioEngine.setMusicDuck(0.95);
+                  window.JourneyGame.UI.playEndingSequence(window.JourneyGame.STORY.finalLetterParagraphs, {
+                    onReplay: () => window.JourneyGame.replayToOpening()
+                  });
+                }
+              });
+            });
+          }
+        });
+      }
+
+      update(time, delta) {
+        const dt = delta / 1000;
+        this.petals.forEach(pt => {
+          pt.sprite.x += pt.vx * dt; pt.sprite.y += pt.vy * dt;
+          if (pt.sprite.y > 320 || pt.sprite.x < -120) {
+            pt.sprite.x = Phaser.Math.Between(60, 620);
+            pt.sprite.y = -110;
+          }
+        });
+      }
+    }
+
+    /* =========================================================================
+     * 7. GLOBAL SCENE RESTART HELPERS & BOOTSTRAP
+     * ========================================================================= */
+    window.JourneyGame.restartGame = function () {
+      window.JourneyGame.SaveSystem.clearProgress();
+      const game = window.JourneyGame.game;
+      game.scene.getScenes(true).forEach(s => s.scene.stop());
+      window.JourneyGame.AudioEngine.setAmbience(0, 0.25);
+      window.JourneyGame.AudioEngine.setMusicDuck(1.0);
+      window.JourneyGame.AudioEngine.setChapter(1);
+      window.JourneyGame.UI.enterGameMode();
+      game.scene.start('GameScene', { saveData: null });
+    };
+
+    window.JourneyGame.replayToOpening = function () {
+      window.JourneyGame.SaveSystem.clearProgress();
+      const game = window.JourneyGame.game;
+      game.scene.getScenes(true).forEach(s => s.scene.stop());
+      window.JourneyGame.AudioEngine.setAmbience(0, 0);
+      window.JourneyGame.AudioEngine.setMusicDuck(1.0);
+      game.scene.start('OpeningScene');
+    };
+
+    window.addEventListener('DOMContentLoaded', () => {
+      window.JourneyGame.UI.init();
+
+      if (typeof Phaser === 'undefined') {
+        document.getElementById('game-container').innerHTML =
+          '<p style="color:#f4efe6;padding:24px;text-align:center;">Gagal memuat Phaser.js. Pastikan koneksi internet aktif saat membuka game ini.</p>';
+        return;
+      }
+
+      window.JourneyGame.game = new Phaser.Game({
+        type: Phaser.AUTO,
+        parent: 'game-container',
+        width: window.innerWidth,
+        height: window.innerHeight,
+        backgroundColor: '#050710',
+        pixelArt: true,
+        roundPixels: true,
+        antialias: false,
+        scale: {
+          mode: Phaser.Scale.RESIZE,
+          autoCenter: Phaser.Scale.NO_CENTER
+        },
+        scene: [BootScene, OpeningScene, GameScene, EndingScene]
+      });
+    });
+  })();
+  </script>
+</body>
+</html>
